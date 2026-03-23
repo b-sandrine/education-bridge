@@ -14,6 +14,15 @@ import contentRoutes from './routes/contentRoutes.js';
 import progressRoutes from './routes/progressRoutes.js';
 import chatbotRoutes from './routes/chatbotRoutes.js';
 
+import swaggerUi from 'swagger-ui-express';
+import YAML from 'yaml';
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+
+
 dotenv.config();
 
 const app = express();
@@ -45,6 +54,23 @@ app.use('/api/chatbot', chatbotRoutes);
 // Health check
 app.get('/api/health', (req, res) => {
   res.status(200).json({ status: 'ok', timestamp: new Date() });
+});
+
+// Load OpenAPI specification
+const openApiFile = fs.readFileSync(path.join(__dirname, '..', 'openapi.yaml'), 'utf8');
+const openApiSpec = YAML.parse(openApiFile);
+
+// Serve Swagger UI
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(openApiSpec, {
+  swaggerOptions: {
+    url: '/api/openapi.json',
+  }
+}));
+
+// Serve OpenAPI JSON
+app.get('/api/openapi.json', (req, res) => {
+  res.setHeader('Content-Type', 'application/json');
+  res.send(openApiSpec);
 });
 
 // 404 handler
