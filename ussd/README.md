@@ -4,15 +4,40 @@ USSD (Unstructured Supplementary Service Data) integration for SMS-based access 
 
 ## Overview
 
-Provides text-based (SMS) access to learning content and features for users with basic mobile phones without internet access.
+Provides text-based (SMS) access to learning content and features for users with basic mobile phones without internet access. Fully integrated with curriculum-aligned courses, progress tracking, and AI chatbot assistance.
+
+## Features Implemented
+
+- ✅ **Multi-language menus** (English, Kinyarwanda, French)
+- ✅ **User authentication** via phone + password
+- ✅ **Course discovery** with category browsing
+- ✅ **Progress tracking** for enrolled courses
+- ✅ **AI Chatbot Q&A** with SMS-friendly responses
+- ✅ **Session management** with auto-expiration
+- ✅ **State machine navigation** for menu control
+- ✅ **Integration with backend API**
+
+## API Endpoints Implemented
+
+### src/handlers/ussdHandler.js
+- `handleMainMenu()` - Main menu navigation
+- `handleLoginChoice()` - Login/Registration flow
+- `handleCoursesMenu()` - Browse available courses
+- `handleProgressMenu()` - View learning progress
+- `handleChatbotQuestion()` - Ask curriculum questions
+
+### src/server.js
+- `POST /ussd` - Twilio-compatible endpoint
+- `GET /ussd` - Africa's Talking compatible endpoint
+- `GET /health` - Health check
 
 ## Quick Start
 
 ### Prerequisites
 
 - Node.js 16+
-- USSD Gateway account (African's Talking, Twillio, etc.)
-- Backend API running
+- USSD Gateway account (Africa's Talking, Twilio, etc.)
+- Backend API running (http://localhost:3000)
 
 ### Installation
 
