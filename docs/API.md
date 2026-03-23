@@ -2,6 +2,27 @@
 
 Complete API reference for the EduBridge backend server.
 
+## 📚 Interactive API Documentation
+
+For interactive testing and visualization of the API, use one of these options:
+
+### Swagger UI
+Once the backend server is running, visit:
+- **Local**: `http://localhost:3000/api-docs`
+- **Setup Guide**: See [SWAGGER_SETUP.md](../backend/SWAGGER_SETUP.md)
+
+### Try Online
+- Visit [Swagger UI Editor](https://editor.swagger.io)
+- Import `backend/openapi.yaml`
+
+### OpenAPI Specification
+- **File**: `backend/openapi.yaml`
+- **Format**: OpenAPI 3.0.0
+- **Endpoints**: 28+ documented endpoints
+- **Schemas**: Complete request/response definitions
+
+---
+
 ## Base URL
 
 ```

@@ -17,6 +17,9 @@ Complete guide to all EduBridge documentation and resources.
 
 ### API & Backend
 - **[API Documentation](./docs/API.md)** - Complete API reference
+- **[API Testing Guide](./API_TESTING_GUIDE.md)** - Test endpoints with examples
+- **[Swagger/OpenAPI Setup](./backend/SWAGGER_SETUP.md)** - Interactive API docs
+- **[OpenAPI Specification](./backend/openapi.yaml)** - Machine-readable API spec
 - **[Backend README](./backend/README.md)** - Backend setup
 - **[Backend Structure](./backend/README.md#project-structure)** - Code organization
 

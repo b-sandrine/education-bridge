@@ -1,0 +1,983 @@
+openapi: 3.0.0
+info:
+  title: EduBridge API
+  description: Multi-platform learning system API for accessing courses, tracking progress, and AI-powered learning assistance
+  version: 1.0.0
+  contact:
+    name: Aspire Haven Foundation
+    email: support@edubridge.local
+  license:
+    name: MIT
+servers:
+  - url: http://localhost:3000/api
+    description: Development server
+  - url: https://api.edubridge.com
+    description: Production server
+
+paths:
+  /health:
+    get:
+      summary: Health Check
+      description: Check if the API is running
+      tags:
+        - Health
+      responses:
+        '200':
+          description: API is healthy
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: ok
+                  timestamp:
+                    type: string
+                    format: date-time
+
+  # Authentication Endpoints
+  /auth/register:
+    post:
+      summary: User Registration
+      description: Register a new user account
+      tags:
+        - Authentication
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserRegistration'
+      responses:
+        '201':
+          description: User registered successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: success
+                  data:
+                    $ref: '#/components/schemas/AuthResponse'
+        '400':
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: User already exists
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /auth/login:
+    post:
+      summary: User Login
+      description: Login with email and password
+      tags:
+        - Authentication
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - email
+                - password
+              properties:
+                email:
+                  type: string
+                  format: email
+                  example: user@example.com
+                password:
+                  type: string
+                  format: password
+                  example: password123
+      responses:
+        '200':
+          description: Login successful
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: success
+                  data:
+                    $ref: '#/components/schemas/AuthResponse'
+        '401':
+          description: Invalid credentials
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /auth/profile:
+    get:
+      summary: Get User Profile
+      description: Get current authenticated user's profile
+      tags:
+        - Authentication
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: User profile retrieved
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: success
+                  data:
+                    $ref: '#/components/schemas/UserProfile'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  # Content Endpoints - Courses
+  /content/courses:
+    get:
+      summary: Get All Courses
+      description: Retrieve all available courses with optional filtering
+      tags:
+        - Content
+      parameters:
+        - name: category
+          in: query
+          description: Filter by course category
+          schema:
+            type: string
+            example: Mathematics
+        - name: level
+          in: query
+          description: Filter by difficulty level
+          schema:
+            type: string
+            enum: [beginner, intermediate, advanced]
+      responses:
+        '200':
+          description: List of courses
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: success
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Course'
+
+    post:
+      summary: Create Course
+      description: Create a new course (educator or admin only)
+      tags:
+        - Content
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CourseCreate'
+      responses:
+        '201':
+          description: Course created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: success
+                  data:
+                    $ref: '#/components/schemas/Course'
+        '403':
+          description: Insufficient permissions
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /content/courses/{courseId}:
+    get:
+      summary: Get Course Details
+      description: Get detailed information about a specific course including lessons
+      tags:
+        - Content
+      parameters:
+        - name: courseId
+          in: path
+          required: true
+          description: Course ID
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Course details with lessons
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: success
+                  data:
+                    allOf:
+                      - $ref: '#/components/schemas/Course'
+                      - type: object
+                        properties:
+                          lessons:
+                            type: array
+                            items:
+                              $ref: '#/components/schemas/Lesson'
+        '404':
+          description: Course not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+    put:
+      summary: Update Course
+      description: Update an existing course (educator or admin only)
+      tags:
+        - Content
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: courseId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CourseUpdate'
+      responses:
+        '200':
+          description: Course updated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: success
+                  data:
+                    $ref: '#/components/schemas/Course'
+        '403':
+          description: Insufficient permissions
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+    delete:
+      summary: Delete Course
+      description: Delete a course (educator or admin only)
+      tags:
+        - Content
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: courseId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '204':
+          description: Course deleted
+        '403':
+          description: Insufficient permissions
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  # Content Endpoints - Lessons
+  /content/lessons:
+    post:
+      summary: Create Lesson
+      description: Create a new lesson for a course (educator or admin only)
+      tags:
+        - Content
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LessonCreate'
+      responses:
+        '201':
+          description: Lesson created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: success
+                  data:
+                    $ref: '#/components/schemas/Lesson'
+        '403':
+          description: Insufficient permissions
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /content/lessons/{lessonId}:
+    get:
+      summary: Get Lesson Details
+      description: Get specific lesson content
+      tags:
+        - Content
+      parameters:
+        - name: lessonId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Lesson details
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: success
+                  data:
+                    $ref: '#/components/schemas/Lesson'
+        '404':
+          description: Lesson not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+    put:
+      summary: Update Lesson
+      description: Update lesson content (educator or admin only)
+      tags:
+        - Content
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: lessonId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LessonUpdate'
+      responses:
+        '200':
+          description: Lesson updated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: success
+                  data:
+                    $ref: '#/components/schemas/Lesson'
+        '403':
+          description: Insufficient permissions
+
+    delete:
+      summary: Delete Lesson
+      description: Delete a lesson (educator or admin only)
+      tags:
+        - Content
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: lessonId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '204':
+          description: Lesson deleted
+        '403':
+          description: Insufficient permissions
+
+  /content/courses/{courseId}/lessons:
+    get:
+      summary: Get Course Lessons
+      description: Get all lessons for a specific course
+      tags:
+        - Content
+      parameters:
+        - name: courseId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: List of lessons
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: success
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Lesson'
+
+  # Progress Endpoints
+  /progress/courses/{courseId}/start:
+    post:
+      summary: Start Course
+      description: Enroll in a course and start learning
+      tags:
+        - Progress
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: courseId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '201':
+          description: Course started
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: success
+                  data:
+                    $ref: '#/components/schemas/Progress'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /progress/courses/{courseId}/update:
+    put:
+      summary: Update Course Progress
+      description: Update student progress in a course
+      tags:
+        - Progress
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: courseId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - lessonsCompleted
+                - score
+              properties:
+                lessonsCompleted:
+                  type: integer
+                  minimum: 0
+                  example: 5
+                score:
+                  type: number
+                  minimum: 0
+                  maximum: 100
+                  example: 85.5
+      responses:
+        '200':
+          description: Progress updated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: success
+                  data:
+                    $ref: '#/components/schemas/Progress'
+
+  /progress/progress:
+    get:
+      summary: Get All User Progress
+      description: Get all courses and progress for authenticated user
+      tags:
+        - Progress
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: List of user progress
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: success
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Progress'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /progress/courses/{courseId}/progress:
+    get:
+      summary: Get Course Progress
+      description: Get progress for a specific course
+      tags:
+        - Progress
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: courseId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Course progress
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: success
+                  data:
+                    $ref: '#/components/schemas/Progress'
+        '404':
+          description: Progress not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /progress/courses/{courseId}/complete:
+    post:
+      summary: Complete Course
+      description: Mark a course as completed
+      tags:
+        - Progress
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: courseId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Course marked as completed
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: success
+                  data:
+                    $ref: '#/components/schemas/Progress'
+
+  # Chatbot Endpoints
+  /chatbot/ask:
+    post:
+      summary: Ask Question
+      description: Ask the AI learning assistant a curriculum-related question
+      tags:
+        - Chatbot
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - message
+              properties:
+                message:
+                  type: string
+                  description: The question to ask
+                  example: What is photosynthesis?
+                courseId:
+                  type: string
+                  format: uuid
+                  description: Optional course ID for context
+                language:
+                  type: string
+                  enum: [en, fr, rw]
+                  default: en
+                  description: Response language
+      responses:
+        '200':
+          description: Question answered
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: success
+                  data:
+                    type: object
+                    properties:
+                      query:
+                        type: string
+                        example: What is photosynthesis?
+                      response:
+                        type: string
+                        example: Photosynthesis is the process by which plants use sunlight to synthesize foods...
+                      language:
+                        type: string
+                        example: en
+                      timestamp:
+                        type: string
+                        format: date-time
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+components:
+  schemas:
+    # User Schemas
+    UserRegistration:
+      type: object
+      required:
+        - firstName
+        - lastName
+        - email
+        - password
+      properties:
+        firstName:
+          type: string
+          minLength: 1
+          example: John
+        lastName:
+          type: string
+          minLength: 1
+          example: Doe
+        email:
+          type: string
+          format: email
+          example: john.doe@example.com
+        password:
+          type: string
+          format: password
+          minLength: 8
+          example: securePassword123
+        role:
+          type: string
+          enum: [student, educator, admin]
+          default: student
+          example: student
+
+    UserProfile:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        email:
+          type: string
+          format: email
+        firstName:
+          type: string
+        lastName:
+          type: string
+        role:
+          type: string
+          enum: [student, educator, admin]
+
+    AuthResponse:
+      type: object
+      properties:
+        user:
+          $ref: '#/components/schemas/UserProfile'
+        token:
+          type: string
+          description: JWT authentication token
+          example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+
+    # Course Schemas
+    Course:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        title:
+          type: string
+          example: Introduction to Biology
+        description:
+          type: string
+          example: Learn the fundamentals of biology including cell structure and genetics
+        category:
+          type: string
+          example: Science
+        level:
+          type: string
+          enum: [beginner, intermediate, advanced]
+          example: beginner
+        content:
+          type: string
+          example: Course overview and learning objectives...
+        duration_weeks:
+          type: integer
+          example: 8
+        educator_id:
+          type: string
+          format: uuid
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+
+    CourseCreate:
+      type: object
+      required:
+        - title
+        - description
+        - category
+        - level
+        - content
+        - durationWeeks
+      properties:
+        title:
+          type: string
+          minLength: 1
+          example: Advanced Mathematics
+        description:
+          type: string
+          minLength: 1
+          example: Master advanced calculus and linear algebra
+        category:
+          type: string
+          example: Mathematics
+        level:
+          type: string
+          enum: [beginner, intermediate, advanced]
+        content:
+          type: string
+        durationWeeks:
+          type: integer
+          minimum: 1
+          example: 12
+
+    CourseUpdate:
+      type: object
+      properties:
+        title:
+          type: string
+        description:
+          type: string
+        content:
+          type: string
+
+    # Lesson Schemas
+    Lesson:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        course_id:
+          type: string
+          format: uuid
+        title:
+          type: string
+          example: Cell Structure
+        content:
+          type: string
+          example: Detailed explanation of cell components...
+        video_url:
+          type: string
+          format: uri
+          nullable: true
+          example: https://example.com/videos/cell-structure.mp4
+        lesson_order:
+          type: integer
+          example: 1
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+
+    LessonCreate:
+      type: object
+      required:
+        - courseId
+        - title
+        - content
+        - order
+      properties:
+        courseId:
+          type: string
+          format: uuid
+        title:
+          type: string
+          minLength: 1
+        content:
+          type: string
+          minLength: 1
+        videoUrl:
+          type: string
+          format: uri
+          nullable: true
+        order:
+          type: integer
+          minimum: 1
+          example: 1
+
+    LessonUpdate:
+      type: object
+      properties:
+        title:
+          type: string
+        content:
+          type: string
+
+    # Progress Schemas
+    Progress:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        user_id:
+          type: string
+          format: uuid
+        course_id:
+          type: string
+          format: uuid
+        lessons_completed:
+          type: integer
+          example: 5
+        score:
+          type: number
+          example: 85.5
+        status:
+          type: string
+          enum: [in_progress, completed, paused]
+          example: in_progress
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+
+    # Error Schemas
+    ErrorResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          example: error
+        statusCode:
+          type: integer
+          example: 400
+        message:
+          type: string
+          example: Invalid request parameters
+
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: JWT token obtained from /auth/login endpoint
+
+tags:
+  - name: Health
+    description: API health check
+  - name: Authentication
+    description: User registration and authentication
+  - name: Content
+    description: Course and lesson management
+  - name: Progress
+    description: Student progress tracking
+  - name: Chatbot
+    description: AI learning assistant
