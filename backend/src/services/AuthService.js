@@ -63,6 +63,36 @@ class AuthService {
       role: user.role,
     };
   }
+
+  static async createAdmin(adminData) {
+    const existingUser = await User.findByEmail(adminData.email);
+    if (existingUser) {
+      throw new ConflictError('User with this email already exists');
+    }
+
+    const adminUserData = {
+      firstName: adminData.firstName,
+      lastName: adminData.lastName,
+      email: adminData.email,
+      password: adminData.password,
+      role: 'admin',
+    };
+
+    const user = await User.create(adminUserData);
+    const token = generateToken(user);
+
+    return {
+      user: {
+        id: user.id,
+        email: user.email,
+        firstName: user.first_name,
+        lastName: user.last_name,
+        role: user.role,
+      },
+      token,
+      message: 'Admin account created successfully',
+    };
+  }
 }
 
 export default AuthService;

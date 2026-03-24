@@ -19,9 +19,18 @@ export const LoginPage = () => {
       setServerError(null);
       try {
         const response = await authAPI.login(values.email, values.password);
-        dispatch(loginSuccess(response.data.data));
+        const userData = response.data.data;
+        dispatch(loginSuccess(userData));
         showSuccess('Login successful!');
-        navigate('/dashboard');
+        
+        // Role-based redirection
+        if (userData.user.role === 'educator') {
+          navigate('/educator-dashboard');
+        } else if (userData.user.role === 'admin') {
+          navigate('/admin-dashboard');
+        } else {
+          navigate('/dashboard');
+        }
       } catch (error) {
         const message = error.response?.data?.message || 'Login failed. Please try again.';
         setServerError(message);

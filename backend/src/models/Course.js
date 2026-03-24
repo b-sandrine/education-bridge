@@ -43,6 +43,11 @@ class Course {
       values.push(filters.level);
       paramIndex++;
     }
+    if (filters.educatorId) {
+      query += ` AND educator_id = $${paramIndex}`;
+      values.push(filters.educatorId);
+      paramIndex++;
+    }
 
     query += ' ORDER BY created_at DESC';
     const result = await pool.query(query, values);

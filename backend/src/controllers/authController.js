@@ -25,3 +25,11 @@ export const getProfile = asyncHandler(async (req, res) => {
     data: user,
   });
 });
+
+export const createAdmin = asyncHandler(async (req, res) => {
+  const result = await AuthService.createAdmin(req.body);
+  res.status(201).json({
+    status: 'success',
+    data: result,
+  });
+});

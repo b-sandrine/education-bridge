@@ -26,6 +26,7 @@ export const getAllCourses = asyncHandler(async (req, res) => {
   const filters = {
     category: req.query.category,
     level: req.query.level,
+    educatorId: req.query.educatorId,
   };
   const courses = await ContentService.getAllCourses(filters);
   res.status(200).json({

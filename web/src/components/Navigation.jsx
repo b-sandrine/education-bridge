@@ -24,12 +24,36 @@ export const Navigation = () => {
         <div className="flex items-center space-x-4">
           {token ? (
             <>
-              <Link to="/dashboard" className="hover:text-blue-100">
-                Dashboard
-              </Link>
-              <Link to="/courses" className="hover:text-blue-100">
-                Courses
-              </Link>
+              {user?.role === 'student' && (
+                <>
+                  <Link to="/dashboard" className="hover:text-blue-100">
+                    Dashboard
+                  </Link>
+                  <Link to="/courses" className="hover:text-blue-100">
+                    Courses
+                  </Link>
+                </>
+              )}
+              {user?.role === 'educator' && (
+                <>
+                  <Link to="/educator-dashboard" className="hover:text-blue-100">
+                    My Courses
+                  </Link>
+                  <Link to="/courses" className="hover:text-blue-100">
+                    Browse Courses
+                  </Link>
+                </>
+              )}
+              {user?.role === 'admin' && (
+                <>
+                  <Link to="/admin-dashboard" className="hover:text-blue-100">
+                    Admin Panel
+                  </Link>
+                  <Link to="/educator-dashboard" className="hover:text-blue-100">
+                    Manage Courses
+                  </Link>
+                </>
+              )}
               <span className="text-sm">{user?.firstName}</span>
               <button onClick={handleLogout} className="bg-red-600 px-4 py-2 rounded hover:bg-red-700">
                 Logout
