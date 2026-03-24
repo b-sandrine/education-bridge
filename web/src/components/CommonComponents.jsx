@@ -1,5 +1,4 @@
 import React from 'react';
-import { ExclamationIcon } from '@heroicons/react/outline';
 
 export const Button = ({ children, variant = 'primary', loading = false, className = '', ...props }) => {
   const baseStyles = 'px-4 py-2 rounded-lg font-semibold transition-colors';
@@ -54,7 +53,7 @@ export const Alert = ({ type = 'info', message }) => {
   return (
     <div className={`border rounded-lg p-4 mb-4 ${bgColor[type]}`}>
       <div className="flex items-center">
-        <ExclamationIcon className="h-5 w-5 mr-2" />
+        <span className="text-lg mr-2">⚠️</span>
         <span>{message}</span>
       </div>
     </div>
