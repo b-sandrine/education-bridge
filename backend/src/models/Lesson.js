@@ -14,8 +14,8 @@ class Lesson {
       lessonData.courseId,
       lessonData.title,
       lessonData.content,
-      lessonData.videoUrl,
-      lessonData.order,
+      lessonData.videoUrl || null,
+      lessonData.lessonOrder || 1,
     ]);
     return result.rows[0];
   }
@@ -45,6 +45,16 @@ class Lesson {
     if (lessonData.content) {
       updates.push(`content = $${paramIndex}`);
       values.push(lessonData.content);
+      paramIndex++;
+    }
+    if (lessonData.lessonOrder) {
+      updates.push(`lesson_order = $${paramIndex}`);
+      values.push(lessonData.lessonOrder);
+      paramIndex++;
+    }
+    if (lessonData.videoUrl !== undefined) {
+      updates.push(`video_url = $${paramIndex}`);
+      values.push(lessonData.videoUrl);
       paramIndex++;
     }
 

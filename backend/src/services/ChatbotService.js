@@ -4,10 +4,21 @@ import logger from '../utils/logger.js';
 class ChatbotService {
   static async generateResponse(query, courseContext = null, language = 'en') {
     try {
-      // Integration with AI API (Claude/ChatGPT)
-      const systemPrompt = courseContext
-        ? `You are an educational assistant helping students learn about: ${courseContext}. Provide clear, helpful answers aligned with the curriculum.`
-        : 'You are an educational assistant. Provide clear, helpful answers to students.';
+      // Build system prompt with course context for better answers
+      let systemPrompt = 'You are an educational assistant helping students learn.';
+      
+      if (courseContext) {
+        systemPrompt = `You are an educational learning assistant. The student is learning about: ${courseContext}. 
+        
+Provide clear, helpful answers about this course. You can answer questions about:
+- What the course covers and learning objectives
+- Explanations of concepts taught in the course
+- How to approach problems related to the course material
+- Study tips and learning strategies
+- Clarifications of course content
+
+Be friendly, encouraging, and tailor your explanations to support active learning.`;
+      }
 
       const response = await axios.post(
         process.env.AI_API_URL || 'https://api.openai.com/v1/chat/completions',

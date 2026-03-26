@@ -141,7 +141,7 @@ export const CourseDetailPage = () => {
             </div>
           </Card>
 
-          {token && <ChatbotInterface courseId={id} />}
+          {token && <ChatbotInterface courseId={id} courseTitle={course?.title} courseDescription={course?.description} />}
         </div>
       </div>
     </div>

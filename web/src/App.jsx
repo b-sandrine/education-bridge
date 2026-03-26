@@ -6,6 +6,7 @@ import 'react-toastify/dist/ReactToastify.css';
 
 import store from './store';
 import { Navigation } from './components/Navigation';
+import { Sidebar } from './components/Sidebar';
 import { HomePage } from './pages/HomePage';
 import { LoginPage } from './pages/LoginPage';
 import { RegisterPage } from './pages/RegisterPage';
@@ -66,19 +67,26 @@ const AppContent = () => {
 
   return (
     <>
-      <Navigation />
-      <Routes>
-        <Route path="/" element={<HomePage />} />
-        <Route path="/login" element={<LoginPage />} />
-        <Route path="/register" element={<RegisterPage />} />
-        <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
-        <Route path="/dashboard" element={<RoleProtectedRoute requiredRole="student"><DashboardPage /></RoleProtectedRoute>} />
-        <Route path="/educator-dashboard" element={<RoleProtectedRoute requiredRole="educator"><EducatorDashboardPage /></RoleProtectedRoute>} />
-        <Route path="/educator-dashboard/courses/:courseId/students" element={<RoleProtectedRoute requiredRole="educator"><CourseStudentsPage /></RoleProtectedRoute>} />
-        <Route path="/admin-dashboard" element={<RoleProtectedRoute requiredRole="admin"><AdminDashboardPage /></RoleProtectedRoute>} />
-        <Route path="/courses" element={<CoursesPage />} />
-        <Route path="/courses/:id" element={<CourseDetailPage />} />
-      </Routes>
+      <div className="flex min-h-screen bg-gray-100">
+        <Sidebar />
+        <div className="flex-1 flex flex-col w-full">
+          <Navigation />
+          <main className="flex-1 overflow-auto">
+            <Routes>
+              <Route path="/" element={<HomePage />} />
+              <Route path="/login" element={<LoginPage />} />
+              <Route path="/register" element={<RegisterPage />} />
+              <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
+              <Route path="/dashboard" element={<RoleProtectedRoute requiredRole="student"><DashboardPage /></RoleProtectedRoute>} />
+              <Route path="/educator-dashboard" element={<RoleProtectedRoute requiredRole="educator"><EducatorDashboardPage /></RoleProtectedRoute>} />
+              <Route path="/educator-dashboard/courses/:courseId/students" element={<RoleProtectedRoute requiredRole="educator"><CourseStudentsPage /></RoleProtectedRoute>} />
+              <Route path="/admin-dashboard" element={<RoleProtectedRoute requiredRole="admin"><AdminDashboardPage /></RoleProtectedRoute>} />
+              <Route path="/courses" element={<CoursesPage />} />
+              <Route path="/courses/:id" element={<CourseDetailPage />} />
+            </Routes>
+          </main>
+        </div>
+      </div>
       <ToastContainer position="bottom-right" autoClose={3000} />
     </>
   );

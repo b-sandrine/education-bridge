@@ -5,7 +5,7 @@ import { chatbotAPI } from '../services/api';
 import { useNotification } from '../hooks/useNotification';
 import { Button, Card, Input } from '../components/CommonComponents';
 
-export const ChatbotInterface = ({ courseId }) => {
+export const ChatbotInterface = ({ courseId, courseTitle, courseDescription }) => {
   const { user, token } = useAuth();
   const { showError } = useNotification();
   const [messages, setMessages] = useState([]);
@@ -24,9 +24,15 @@ export const ChatbotInterface = ({ courseId }) => {
     setLoading(true);
 
     try {
+      // Include course context in the request
+      const courseContext = courseTitle
+        ? `Course: ${courseTitle}. ${courseDescription || ''}`
+        : null;
+
       const response = await chatbotAPI.askQuestion({
         message: input,
         courseId,
+        courseContext,
         language: 'en',
       });
 
