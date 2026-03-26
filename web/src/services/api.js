@@ -23,6 +23,13 @@ export const authAPI = {
   register: (userData) => apiClient.post('/auth/register', userData),
   login: (email, password) => apiClient.post('/auth/login', { email, password }),
   getProfile: () => apiClient.get('/auth/profile'),
+  updateProfile: (profileData) => apiClient.put('/auth/profile', profileData),
+  
+  // Admin user management
+  getAllUsers: (role) => apiClient.get('/auth/users', { params: role ? { role } : {} }),
+  getUsersByRole: (role) => apiClient.get('/auth/users', { params: { role } }),
+  updateUserRole: (userId, role) => apiClient.put(`/auth/users/${userId}/role`, { role }),
+  deleteUser: (userId) => apiClient.delete(`/auth/users/${userId}`),
 };
 
 // Content endpoints
@@ -47,6 +54,11 @@ export const progressAPI = {
   getUserProgress: () => apiClient.get('/progress/progress'),
   getCourseProgress: (courseId) => apiClient.get(`/progress/courses/${courseId}/progress`),
   completeCourse: (courseId) => apiClient.post(`/progress/courses/${courseId}/complete`),
+  
+  // Educator progress tracking
+  getStudentsInCourse: (courseId) => apiClient.get(`/progress/educator/courses/${courseId}/students`),
+  getStudentCourseProgress: (courseId, studentId) => apiClient.get(`/progress/educator/courses/${courseId}/students/${studentId}`),
+  getCourseAnalytics: (courseId) => apiClient.get(`/progress/educator/courses/${courseId}/analytics`),
 };
 
 // Chatbot endpoints

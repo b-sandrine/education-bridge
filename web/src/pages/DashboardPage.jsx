@@ -29,7 +29,7 @@ export const DashboardPage = () => {
     };
 
     fetchProgress();
-  }, [dispatch, showError]);
+  }, []);
 
   if (loading) return <div className="text-center py-8">Loading dashboard...</div>;
 

@@ -4,6 +4,7 @@ import { contentAPI, progressAPI } from '../services/api';
 import { useAuth } from '../hooks/useAppStore';
 import { useNotification } from '../hooks/useNotification';
 import { Card, Button } from '../components/CommonComponents';
+import { ChatbotInterface } from '../components/ChatbotInterface';
 
 export const CourseDetailPage = () => {
   const { id } = useParams();
@@ -25,8 +26,13 @@ export const CourseDetailPage = () => {
         setLessons(courseResponse.data.data.lessons || []);
 
         if (token) {
-          const progressResponse = await progressAPI.getCourseProgress(id);
-          setProgress(progressResponse.data.data);
+          try {
+            const progressResponse = await progressAPI.getCourseProgress(id);
+            setProgress(progressResponse.data.data);
+          } catch (progressError) {
+            // If progress doesn't exist, that's fine - user hasn't started course yet
+            setProgress(null);
+          }
         }
       } catch (error) {
         showError('Failed to load course details');
@@ -36,7 +42,7 @@ export const CourseDetailPage = () => {
     };
 
     fetchCourseDetails();
-  }, [id, token, showError]);
+  }, [id, token]);
 
   const handleStartCourse = async () => {
     try {
@@ -93,7 +99,7 @@ export const CourseDetailPage = () => {
         )}
       </Card>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-6">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mt-6">
         <div className="md:col-span-2">
           {selectedLesson && (
             <Card>
@@ -115,7 +121,7 @@ export const CourseDetailPage = () => {
           )}
         </div>
 
-        <div>
+        <div className="md:col-span-2 space-y-6">
           <Card>
             <h3 className="text-xl font-bold mb-4">Lessons</h3>
             <div className="space-y-2">
@@ -134,6 +140,8 @@ export const CourseDetailPage = () => {
               ))}
             </div>
           </Card>
+
+          {token && <ChatbotInterface courseId={id} />}
         </div>
       </div>
     </div>

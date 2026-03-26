@@ -36,7 +36,12 @@ export const getAllCourses = asyncHandler(async (req, res) => {
 });
 
 export const updateCourse = asyncHandler(async (req, res) => {
-  const course = await ContentService.updateCourse(req.params.id, req.body);
+  const course = await ContentService.updateCourse(
+    req.params.id,
+    req.body,
+    req.user.id,
+    req.user.role
+  );
   res.status(200).json({
     status: 'success',
     data: course,
@@ -44,13 +49,21 @@ export const updateCourse = asyncHandler(async (req, res) => {
 });
 
 export const deleteCourse = asyncHandler(async (req, res) => {
-  await ContentService.deleteCourse(req.params.id);
+  await ContentService.deleteCourse(
+    req.params.id,
+    req.user.id,
+    req.user.role
+  );
   res.status(204).send();
 });
 
 // Lesson endpoints
 export const createLesson = asyncHandler(async (req, res) => {
-  const lesson = await ContentService.createLesson(req.body);
+  const lesson = await ContentService.createLesson(
+    req.body,
+    req.user.id,
+    req.user.role
+  );
   res.status(201).json({
     status: 'success',
     data: lesson,
@@ -74,7 +87,12 @@ export const getCourseLessons = asyncHandler(async (req, res) => {
 });
 
 export const updateLesson = asyncHandler(async (req, res) => {
-  const lesson = await ContentService.updateLesson(req.params.id, req.body);
+  const lesson = await ContentService.updateLesson(
+    req.params.id,
+    req.body,
+    req.user.id,
+    req.user.role
+  );
   res.status(200).json({
     status: 'success',
     data: lesson,
@@ -82,6 +100,11 @@ export const updateLesson = asyncHandler(async (req, res) => {
 });
 
 export const deleteLesson = asyncHandler(async (req, res) => {
-  await ContentService.deleteLesson(req.params.id);
+  await ContentService.deleteLesson(
+    req.params.id,
+    req.user.id,
+    req.user.role
+  );
   res.status(204).send();
 });
+

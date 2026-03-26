@@ -1,6 +1,6 @@
 import Course from '../models/Course.js';
 import Lesson from '../models/Lesson.js';
-import { NotFoundError } from '../utils/errors.js';
+import { NotFoundError, ForbiddenError } from '../utils/errors.js';
 
 class ContentService {
   static async createCourse(courseData) {
@@ -26,19 +26,46 @@ class ContentService {
     return courses;
   }
 
-  static async updateCourse(id, courseData) {
-    const course = await Course.update(id, courseData);
+  static async updateCourse(id, courseData, requestingUserId, userRole) {
+    const course = await Course.findById(id);
     if (!course) {
       throw new NotFoundError('Course not found');
     }
-    return course;
+
+    // Verify ownership: educators can only edit their own courses, admins can edit any
+    if (userRole === 'educator' && course.educator_id !== requestingUserId) {
+      throw new ForbiddenError('You can only edit your own courses');
+    }
+
+    const updatedCourse = await Course.update(id, courseData);
+    return updatedCourse;
   }
 
-  static async deleteCourse(id) {
+  static async deleteCourse(id, requestingUserId, userRole) {
+    const course = await Course.findById(id);
+    if (!course) {
+      throw new NotFoundError('Course not found');
+    }
+
+    // Verify ownership: educators can only delete their own courses, admins can delete any
+    if (userRole === 'educator' && course.educator_id !== requestingUserId) {
+      throw new ForbiddenError('You can only delete your own courses');
+    }
+
     await Course.delete(id);
   }
 
-  static async createLesson(lessonData) {
+  static async createLesson(lessonData, requestingUserId, userRole) {
+    // Verify that the course exists and the user is authorized to create lessons for it
+    const course = await Course.findById(lessonData.courseId);
+    if (!course) {
+      throw new NotFoundError('Course not found');
+    }
+
+    if (userRole === 'educator' && course.educator_id !== requestingUserId) {
+      throw new ForbiddenError('You can only create lessons for your own courses');
+    }
+
     const lesson = await Lesson.create(lessonData);
     return lesson;
   }
@@ -61,15 +88,42 @@ class ContentService {
     return lessons;
   }
 
-  static async updateLesson(id, lessonData) {
-    const lesson = await Lesson.update(id, lessonData);
+  static async updateLesson(id, lessonData, requestingUserId, userRole) {
+    const lesson = await Lesson.findById(id);
     if (!lesson) {
       throw new NotFoundError('Lesson not found');
     }
-    return lesson;
+
+    // Verify course ownership
+    const course = await Course.findById(lesson.course_id);
+    if (!course) {
+      throw new NotFoundError('Course not found');
+    }
+
+    if (userRole === 'educator' && course.educator_id !== requestingUserId) {
+      throw new ForbiddenError('You can only edit lessons in your own courses');
+    }
+
+    const updatedLesson = await Lesson.update(id, lessonData);
+    return updatedLesson;
   }
 
-  static async deleteLesson(id) {
+  static async deleteLesson(id, requestingUserId, userRole) {
+    const lesson = await Lesson.findById(id);
+    if (!lesson) {
+      throw new NotFoundError('Lesson not found');
+    }
+
+    // Verify course ownership
+    const course = await Course.findById(lesson.course_id);
+    if (!course) {
+      throw new NotFoundError('Course not found');
+    }
+
+    if (userRole === 'educator' && course.educator_id !== requestingUserId) {
+      throw new ForbiddenError('You can only delete lessons in your own courses');
+    }
+
     await Lesson.delete(id);
   }
 }

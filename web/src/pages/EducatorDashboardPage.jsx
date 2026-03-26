@@ -1,22 +1,31 @@
 import React, { useState, useEffect } from 'react';
 import { useSelector } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
 import { Button, Card, Alert } from '../components/CommonComponents';
 import { CourseForm } from '../components/CourseForm';
+import { LessonForm } from '../components/LessonForm';
 import { contentAPI } from '../services/api';
 import { useNotification } from '../hooks/useNotification';
 
 export const EducatorDashboardPage = () => {
   const user = useSelector((state) => state.auth.user);
+  const navigate = useNavigate();
   const [courses, setCourses] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
   const [editingCourse, setEditingCourse] = useState(null);
   const [error, setError] = useState(null);
+  const [managingLessons, setManagingLessons] = useState(null);
+  const [lessons, setLessons] = useState([]);
+  const [showLessonForm, setShowLessonForm] = useState(false);
+  const [editingLesson, setEditingLesson] = useState(null);
   const { showSuccess, showError } = useNotification();
 
   useEffect(() => {
-    fetchCourses();
-  }, []);
+    if (user?.id) {
+      fetchCourses();
+    }
+  }, [user?.id]);
 
   const fetchCourses = async () => {
     try {
@@ -30,6 +39,16 @@ export const EducatorDashboardPage = () => {
       showError(message);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchLessons = async (courseId) => {
+    try {
+      const response = await contentAPI.getCourseLessons(courseId);
+      setLessons(response.data.data || []);
+    } catch (err) {
+      const message = err.response?.data?.message || 'Failed to fetch lessons';
+      showError(message);
     }
   };
 
@@ -72,6 +91,45 @@ export const EducatorDashboardPage = () => {
     }
   };
 
+  const handleCreateLesson = async (formData) => {
+    try {
+      await contentAPI.createLesson(formData);
+      showSuccess('Lesson created successfully!');
+      setShowLessonForm(false);
+      fetchLessons(managingLessons.id);
+    } catch (err) {
+      const message = err.response?.data?.message || 'Failed to create lesson';
+      showError(message);
+      throw err;
+    }
+  };
+
+  const handleUpdateLesson = async (formData) => {
+    try {
+      await contentAPI.updateLesson(editingLesson.id, formData);
+      showSuccess('Lesson updated successfully!');
+      setEditingLesson(null);
+      fetchLessons(managingLessons.id);
+    } catch (err) {
+      const message = err.response?.data?.message || 'Failed to update lesson';
+      showError(message);
+      throw err;
+    }
+  };
+
+  const handleDeleteLesson = async (lessonId) => {
+    if (!window.confirm('Are you sure you want to delete this lesson?')) return;
+
+    try {
+      await contentAPI.deleteLesson(lessonId);
+      showSuccess('Lesson deleted successfully!');
+      fetchLessons(managingLessons.id);
+    } catch (err) {
+      const message = err.response?.data?.message || 'Failed to delete lesson';
+      showError(message);
+    }
+  };
+
   if (showForm || editingCourse) {
     return (
       <div className="min-h-screen bg-gray-100 py-12 px-4">
@@ -84,6 +142,99 @@ export const EducatorDashboardPage = () => {
               setEditingCourse(null);
             }}
           />
+        </div>
+      </div>
+    );
+  }
+
+  if (showLessonForm || editingLesson) {
+    return (
+      <div className="min-h-screen bg-gray-100 py-12 px-4">
+        <div className="max-w-4xl mx-auto">
+          <LessonForm
+            courseId={managingLessons.id}
+            initialData={editingLesson}
+            onSubmit={editingLesson ? handleUpdateLesson : handleCreateLesson}
+            onCancel={() => {
+              setShowLessonForm(false);
+              setEditingLesson(null);
+            }}
+          />
+        </div>
+      </div>
+    );
+  }
+
+  if (managingLessons) {
+    return (
+      <div className="min-h-screen bg-gray-100 py-12 px-4">
+        <div className="max-w-6xl mx-auto">
+          <div className="mb-8 flex items-center justify-between">
+            <div>
+              <h1 className="text-4xl font-bold text-gray-900 mb-2">Manage Lessons</h1>
+              <p className="text-gray-600">Course: {managingLessons.title}</p>
+            </div>
+            <Button
+              variant="primary"
+              onClick={() => setShowLessonForm(true)}
+            >
+              + Add Lesson
+            </Button>
+          </div>
+
+          {lessons.length === 0 ? (
+            <Card className="text-center py-12">
+              <p className="text-gray-600 mb-4">No lessons yet. Create your first lesson!</p>
+              <Button
+                variant="primary"
+                onClick={() => setShowLessonForm(true)}
+              >
+                Add First Lesson
+              </Button>
+            </Card>
+          ) : (
+            <div className="grid gap-6">
+              {lessons.map((lesson) => (
+                <Card key={lesson.id} className="flex flex-col">
+                  <div className="flex justify-between items-start mb-4">
+                    <div>
+                      <h3 className="text-xl font-bold text-gray-900 mb-2">
+                        Lesson {lesson.lesson_order}: {lesson.title}
+                      </h3>
+                      <p className="text-gray-600 text-sm">{lesson.content.substring(0, 100)}...</p>
+                    </div>
+                    <div className="flex gap-2">
+                      <Button
+                        variant="secondary"
+                        onClick={() => setEditingLesson(lesson)}
+                        className="text-sm"
+                      >
+                        Edit
+                      </Button>
+                      <Button
+                        variant="danger"
+                        onClick={() => handleDeleteLesson(lesson.id)}
+                        className="text-sm"
+                      >
+                        Delete
+                      </Button>
+                    </div>
+                  </div>
+                </Card>
+              ))}
+            </div>
+          )}
+
+          <Button
+            variant="secondary"
+            onClick={() => {
+              setManagingLessons(null);
+              setLessons([]);
+            }}
+            className="mt-6"
+          >
+            Back to Courses
+          </Button>
         </div>
       </div>
     );
@@ -149,21 +300,40 @@ export const EducatorDashboardPage = () => {
                   </p>
                 </div>
 
-                <div className="flex gap-2 pt-4 border-t border-gray-200">
+                <div className="flex flex-col gap-2 pt-4 border-t border-gray-200">
                   <Button
-                    variant="secondary"
-                    onClick={() => setEditingCourse(course)}
-                    className="flex-1"
+                    variant="primary"
+                    onClick={() => {
+                      setManagingLessons(course);
+                      fetchLessons(course.id);
+                    }}
+                    className="w-full"
                   >
-                    Edit
+                    Manage Lessons
                   </Button>
                   <Button
-                    variant="danger"
-                    onClick={() => handleDeleteCourse(course.id)}
-                    className="flex-1"
+                    variant="primary"
+                    onClick={() => navigate(`/educator-dashboard/courses/${course.id}/students`)}
+                    className="w-full bg-green-600 hover:bg-green-700"
                   >
-                    Delete
+                    View Student Progress
                   </Button>
+                  <div className="flex gap-2">
+                    <Button
+                      variant="secondary"
+                      onClick={() => setEditingCourse(course)}
+                      className="flex-1"
+                    >
+                      Edit
+                    </Button>
+                    <Button
+                      variant="danger"
+                      onClick={() => handleDeleteCourse(course.id)}
+                      className="flex-1"
+                    >
+                      Delete
+                    </Button>
+                  </div>
                 </div>
               </Card>
             ))}

@@ -54,7 +54,9 @@ export const Navigation = () => {
                   </Link>
                 </>
               )}
-              <span className="text-sm">{user?.firstName}</span>
+              <Link to="/profile" className="hover:text-blue-100 flex items-center space-x-1">
+                <span className="text-sm">{user?.firstName}</span>
+              </Link>
               <button onClick={handleLogout} className="bg-red-600 px-4 py-2 rounded hover:bg-red-700">
                 Logout
               </button>

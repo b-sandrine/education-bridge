@@ -32,6 +32,18 @@ class Progress {
     return result.rows;
   }
 
+  static async findByCourseId(courseId) {
+    const query = `
+      SELECT p.*, u.first_name, u.last_name, u.email 
+      FROM progress p
+      JOIN users u ON p.user_id = u.id
+      WHERE p.course_id = $1
+      ORDER BY u.first_name ASC
+    `;
+    const result = await pool.query(query, [courseId]);
+    return result.rows;
+  }
+
   static async update(id, progressData) {
     const updates = [];
     const values = [id];

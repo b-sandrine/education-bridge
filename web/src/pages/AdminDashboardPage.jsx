@@ -30,10 +30,11 @@ export const AdminDashboardPage = () => {
 
       if (activeTab === 'users' || activeTab === 'overview') {
         try {
-          // Note: This would need a dedicated endpoint for all users
-          // For now, we'll just set an empty array
-          setUsers([]);
+          const usersResponse = await authAPI.getAllUsers();
+          setUsers(usersResponse.data.data || []);
         } catch (err) {
+          const message = err.response?.data?.message || 'Failed to fetch users';
+          showError(message);
           setUsers([]);
         }
       }
@@ -58,6 +59,30 @@ export const AdminDashboardPage = () => {
     }
   };
 
+  const handleUpdateUserRole = async (userId, newRole) => {
+    if (!window.confirm(`Change user role to ${newRole}?`)) return;
+
+    try {
+      await authAPI.updateUserRole(userId, newRole);
+      showSuccess('User role updated successfully!');
+      fetchData();
+    } catch (err) {
+      showError(err.response?.data?.message || 'Failed to update user role');
+    }
+  };
+
+  const handleDeleteUser = async (userId, userName) => {
+    if (!window.confirm(`Delete user ${userName}? This action cannot be undone.`)) return;
+
+    try {
+      await authAPI.deleteUser(userId);
+      showSuccess('User deleted successfully!');
+      fetchData();
+    } catch (err) {
+      showError(err.response?.data?.message || 'Failed to delete user');
+    }
+  };
+
   const filteredCourses = courses.filter(
     (course) =>
       course.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -67,11 +92,13 @@ export const AdminDashboardPage = () => {
   const filteredUsers = users.filter(
     (u) =>
       u.firstName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      u.lastName.toLowerCase().includes(searchTerm.toLowerCase()) ||
       u.email.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const studentCount = courses.reduce((sum, course) => sum + (course.enrollmentCount || 0), 0);
+  const studentCount = users.filter((u) => u.role === 'student').length;
   const educatorCount = users.filter((u) => u.role === 'educator').length;
+  const adminCount = users.filter((u) => u.role === 'admin').length;
 
   return (
     <div className="min-h-screen bg-gray-100 py-12 px-4">
@@ -105,22 +132,26 @@ export const AdminDashboardPage = () => {
 
         {/* Overview Tab */}
         {activeTab === 'overview' && (
-          <div className="grid gap-6 md:grid-cols-4 mb-8">
+          <div className="grid gap-6 md:grid-cols-5 mb-8">
             <Card className="bg-white px-6 py-4">
               <p className="text-gray-600 text-sm">Total Courses</p>
               <p className="text-3xl font-bold text-blue-600">{courses.length}</p>
             </Card>
             <Card className="bg-white px-6 py-4">
-              <p className="text-gray-600 text-sm">Total Educators</p>
-              <p className="text-3xl font-bold text-green-600">{educatorCount}</p>
+              <p className="text-gray-600 text-sm">Total Users</p>
+              <p className="text-3xl font-bold text-gray-600">{users.length}</p>
             </Card>
             <Card className="bg-white px-6 py-4">
-              <p className="text-gray-600 text-sm">Active Users</p>
-              <p className="text-3xl font-bold text-purple-600">{users.length}</p>
+              <p className="text-gray-600 text-sm">Students</p>
+              <p className="text-3xl font-bold text-green-600">{studentCount}</p>
             </Card>
             <Card className="bg-white px-6 py-4">
-              <p className="text-gray-600 text-sm">Total Enrollments</p>
-              <p className="text-3xl font-bold text-orange-600">{studentCount}</p>
+              <p className="text-gray-600 text-sm">Educators</p>
+              <p className="text-3xl font-bold text-blue-600">{educatorCount}</p>
+            </Card>
+            <Card className="bg-white px-6 py-4">
+              <p className="text-gray-600 text-sm">Admins</p>
+              <p className="text-3xl font-bold text-red-600">{adminCount}</p>
             </Card>
           </div>
         )}
@@ -256,9 +287,28 @@ export const AdminDashboardPage = () => {
                           </span>
                         </td>
                         <td className="px-6 py-4 text-right">
-                          <Button variant="secondary" className="text-sm" disabled>
-                            View
-                          </Button>
+                          <div className="flex gap-2 justify-end">
+                            <select
+                              value={u.role}
+                              onChange={(e) => handleUpdateUserRole(u.id, e.target.value)}
+                              className="text-sm px-2 py-1 border border-gray-300 rounded"
+                              disabled={user.id === u.id}
+                              title={user.id === u.id ? 'Cannot change your own role' : ''}
+                            >
+                              <option value="student">Student</option>
+                              <option value="educator">Educator</option>
+                              <option value="admin">Admin</option>
+                            </select>
+                            {user.id !== u.id && (
+                              <Button
+                                variant="danger"
+                                onClick={() => handleDeleteUser(u.id, `${u.firstName} ${u.lastName}`)}
+                                className="text-sm"
+                              >
+                                Delete
+                              </Button>
+                            )}
+                          </div>
                         </td>
                       </tr>
                     ))}

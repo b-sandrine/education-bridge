@@ -1,6 +1,6 @@
 import User from '../models/User.js';
 import { generateToken } from '../middleware/auth.js';
-import { UnauthorizedError, ConflictError } from '../utils/errors.js';
+import { UnauthorizedError, ConflictError, NotFoundError, ForbiddenError } from '../utils/errors.js';
 
 class AuthService {
   static async register(userData) {
@@ -64,6 +64,26 @@ class AuthService {
     };
   }
 
+  static async updateUserProfile(id, profileData) {
+    const user = await User.findById(id);
+    if (!user) {
+      throw new NotFoundError('User not found');
+    }
+
+    const updatedUser = await User.update(id, {
+      firstName: profileData.firstName,
+      lastName: profileData.lastName,
+    });
+
+    return {
+      id: updatedUser.id,
+      email: updatedUser.email,
+      firstName: updatedUser.first_name,
+      lastName: updatedUser.last_name,
+      role: updatedUser.role,
+    };
+  }
+
   static async createAdmin(adminData) {
     const existingUser = await User.findByEmail(adminData.email);
     if (existingUser) {
@@ -92,6 +112,63 @@ class AuthService {
       token,
       message: 'Admin account created successfully',
     };
+  }
+
+  // User management endpoints (admin only)
+  static async getAllUsers(role = null) {
+    const users = await User.findAll(role);
+    return users.map((user) => ({
+      id: user.id,
+      email: user.email,
+      firstName: user.first_name,
+      lastName: user.last_name,
+      role: user.role,
+      createdAt: user.created_at,
+    }));
+  }
+
+  static async getUsersByRole(role) {
+    if (!['student', 'educator', 'admin'].includes(role)) {
+      throw new Error('Invalid role');
+    }
+    const users = await User.findAll(role);
+    return users.map((user) => ({
+      id: user.id,
+      email: user.email,
+      firstName: user.first_name,
+      lastName: user.last_name,
+      role: user.role,
+      createdAt: user.created_at,
+    }));
+  }
+
+  static async updateUserRole(userId, newRole) {
+    if (!['student', 'educator', 'admin'].includes(newRole)) {
+      throw new Error('Invalid role');
+    }
+
+    const user = await User.findById(userId);
+    if (!user) {
+      throw new NotFoundError('User not found');
+    }
+
+    const updatedUser = await User.update(userId, { role: newRole });
+    return {
+      id: updatedUser.id,
+      email: updatedUser.email,
+      firstName: updatedUser.first_name,
+      lastName: updatedUser.last_name,
+      role: updatedUser.role,
+    };
+  }
+
+  static async deleteUser(userId) {
+    const user = await User.findById(userId);
+    if (!user) {
+      throw new NotFoundError('User not found');
+    }
+
+    await User.delete(userId);
   }
 }
 
