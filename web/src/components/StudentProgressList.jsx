@@ -1,10 +1,12 @@
 import React, { useEffect, useState } from 'react';
-import { progressAPI } from '../services/api';
+import { progressAPI, contentAPI } from '../services/api';
 import { useNotification } from '../hooks/useNotification';
 import { Card, Button } from './CommonComponents';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faTrash } from '@fortawesome/free-solid-svg-icons';
 
-export const StudentProgressList = ({ courseId, courseLessons = [] }) => {
-  const { showError } = useNotification();
+export const StudentProgressList = ({ courseId, courseLessons = [], canRemoveStudent = false }) => {
+  const { showError, showSuccess } = useNotification();
   const [students, setStudents] = useState([]);
   const [loading, setLoading] = useState(true);
   const [analytics, setAnalytics] = useState(null);
@@ -44,6 +46,18 @@ export const StudentProgressList = ({ courseId, courseLessons = [] }) => {
       setSelectedStudent(student);
     } catch (error) {
       showError('Failed to load student details');
+    }
+  };
+
+  const handleRemoveStudent = async (studentId, studentName) => {
+    if (!window.confirm(`Remove ${studentName} from this course?`)) return;
+
+    try {
+      await contentAPI.removeStudent(courseId, studentId);
+      showSuccess('Student removed from course successfully!');
+      fetchStudentsProgress();
+    } catch (error) {
+      showError(error.response?.data?.message || 'Failed to remove student');
     }
   };
 
@@ -180,6 +194,9 @@ export const StudentProgressList = ({ courseId, courseLessons = [] }) => {
                   <th className="text-left py-3 px-4 font-semibold">Score</th>
                   <th className="text-left py-3 px-4 font-semibold">Status</th>
                   <th className="text-center py-3 px-4 font-semibold">Action</th>
+                  {canRemoveStudent && (
+                    <th className="text-center py-3 px-4 font-semibold">Remove</th>
+                  )}
                 </tr>
               </thead>
               <tbody>
@@ -216,6 +233,17 @@ export const StudentProgressList = ({ courseId, courseLessons = [] }) => {
                         View Details
                       </button>
                     </td>
+                    {canRemoveStudent && (
+                      <td className="py-3 px-4 text-center">
+                        <button
+                          onClick={() => handleRemoveStudent(student.user_id, `${student.first_name} ${student.last_name}`)}
+                          className="text-red-600 hover:text-red-800 font-semibold text-sm flex items-center justify-center gap-1"
+                        >
+                          <FontAwesomeIcon icon={faTrash} />
+                          Remove
+                        </button>
+                      </td>
+                    )}
                   </tr>
                 ))}
               </tbody>

@@ -52,4 +52,40 @@ router.delete(
   contentController.deleteLesson
 );
 
+// Enrollment routes
+router.post(
+  '/courses/:courseId/enroll',
+  authenticate,
+  authorize('admin'),
+  contentController.enrollStudent
+);
+
+router.post(
+  '/courses/:courseId/remove-student',
+  authenticate,
+  authorize('admin'),
+  contentController.removeStudent
+);
+
+router.get(
+  '/courses/:courseId/students',
+  authenticate,
+  authorize('educator', 'admin'),
+  contentController.getCourseStudents
+);
+
+router.get(
+  '/courses/:courseId/unenrolled-students',
+  authenticate,
+  authorize('admin'),
+  contentController.getUnenrolledStudents
+);
+
+router.get(
+  '/enrollment-stats',
+  authenticate,
+  authorize('admin'),
+  contentController.getEnrollmentStats
+);
+
 export default router;

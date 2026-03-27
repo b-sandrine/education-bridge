@@ -17,6 +17,7 @@ import { CourseDetailPage } from './pages/CourseDetailPage';
 import { CourseStudentsPage } from './pages/CourseStudentsPage';
 import { EducatorDashboardPage } from './pages/EducatorDashboardPage';
 import { AdminDashboardPage } from './pages/AdminDashboardPage';
+import { StudentQueriesPage } from './pages/StudentQueriesPage';
 import { authAPI } from './services/api';
 import { loginSuccess } from './store/authSlice';
 
@@ -78,6 +79,7 @@ const AppContent = () => {
               <Route path="/register" element={<RegisterPage />} />
               <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
               <Route path="/dashboard" element={<RoleProtectedRoute requiredRole="student"><DashboardPage /></RoleProtectedRoute>} />
+              <Route path="/queries" element={<RoleProtectedRoute requiredRole="student"><StudentQueriesPage /></RoleProtectedRoute>} />
               <Route path="/educator-dashboard" element={<RoleProtectedRoute requiredRole="educator"><EducatorDashboardPage /></RoleProtectedRoute>} />
               <Route path="/educator-dashboard/courses/:courseId/students" element={<RoleProtectedRoute requiredRole="educator"><CourseStudentsPage /></RoleProtectedRoute>} />
               <Route path="/admin-dashboard" element={<RoleProtectedRoute requiredRole="admin"><AdminDashboardPage /></RoleProtectedRoute>} />

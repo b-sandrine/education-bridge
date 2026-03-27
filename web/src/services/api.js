@@ -45,6 +45,13 @@ export const contentAPI = {
   createLesson: (data) => apiClient.post('/content/lessons', data),
   updateLesson: (id, data) => apiClient.put(`/content/lessons/${id}`, data),
   deleteLesson: (id) => apiClient.delete(`/content/lessons/${id}`),
+  
+  // Student enrollment
+  enrollStudent: (courseId, studentId) => apiClient.post(`/content/courses/${courseId}/enroll`, { studentId }),
+  removeStudent: (courseId, studentId) => apiClient.post(`/content/courses/${courseId}/remove-student`, { studentId }),
+  getEnrollmentStats: () => apiClient.get('/content/enrollment-stats'),
+  getCourseStudents: (courseId) => apiClient.get(`/content/courses/${courseId}/students`),
+  getUnenrolledStudents: (courseId) => apiClient.get(`/content/courses/${courseId}/unenrolled-students`),
 };
 
 // Progress endpoints
@@ -64,6 +71,20 @@ export const progressAPI = {
 // Chatbot endpoints
 export const chatbotAPI = {
   askQuestion: (data) => apiClient.post('/chatbot/ask', data),
+};
+
+// Query endpoints
+export const queryAPI = {
+  // Student endpoints
+  createQuery: (data) => apiClient.post('/queries', data),
+  getMyQueries: () => apiClient.get('/queries'),
+  deleteQuery: (id) => apiClient.delete(`/queries/${id}`),
+  
+  // Admin endpoints
+  getAdminQueries: (filters) => apiClient.get('/admin/queries', { params: filters }),
+  getQueryById: (id) => apiClient.get(`/admin/queries/${id}`),
+  respondToQuery: (id, data) => apiClient.put(`/admin/queries/${id}/respond`, data),
+  updateQueryStatus: (id, status) => apiClient.put(`/admin/queries/${id}/status`, { status }),
 };
 
 export default apiClient;

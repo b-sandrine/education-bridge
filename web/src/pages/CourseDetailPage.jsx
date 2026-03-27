@@ -58,10 +58,12 @@ export const CourseDetailPage = () => {
   if (!course) return <div className="text-center py-8 text-red-600">Course not found</div>;
 
   return (
-    <div className="max-w-4xl mx-auto px-4 py-8">
-      <Card>
-        <h1 className="text-4xl font-bold mb-4">{course.title}</h1>
-        <p className="text-gray-600 mb-4">{course.description}</p>
+    <div className="min-h-screen bg-gray-100 py-8 px-4">
+
+      <div className="max-w-4xl mx-auto">
+        <Card>
+          <h1 className="text-4xl font-bold mb-4">{course.title}</h1>
+          <p className="text-gray-600 mb-4">{course.description}</p>
 
         <div className="grid grid-cols-3 gap-4 mb-6">
           <div>
@@ -144,6 +146,7 @@ export const CourseDetailPage = () => {
           {token && <ChatbotInterface courseId={id} courseTitle={course?.title} courseDescription={course?.description} />}
         </div>
       </div>
+    </div>
     </div>
   );
 };

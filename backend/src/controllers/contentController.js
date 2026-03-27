@@ -108,3 +108,67 @@ export const deleteLesson = asyncHandler(async (req, res) => {
   res.status(204).send();
 });
 
+// Enrollment endpoints
+export const enrollStudent = asyncHandler(async (req, res) => {
+  const { studentId } = req.body;
+  const { courseId } = req.params;
+  
+  if (!studentId) {
+    return res.status(400).json({
+      status: 'error',
+      message: 'Student ID is required',
+    });
+  }
+
+  const progress = await ContentService.enrollStudent(courseId, studentId);
+  res.status(201).json({
+    status: 'success',
+    message: 'Student enrolled successfully',
+    data: progress,
+  });
+});
+
+export const removeStudent = asyncHandler(async (req, res) => {
+  const { studentId } = req.body;
+  const { courseId } = req.params;
+  
+  if (!studentId) {
+    return res.status(400).json({
+      status: 'error',
+      message: 'Student ID is required',
+    });
+  }
+
+  await ContentService.removeStudent(courseId, studentId);
+  res.status(200).json({
+    status: 'success',
+    message: 'Student removed from course successfully',
+  });
+});
+
+export const getCourseStudents = asyncHandler(async (req, res) => {
+  const { courseId } = req.params;
+  const students = await ContentService.getCourseStudents(courseId);
+  res.status(200).json({
+    status: 'success',
+    data: students,
+  });
+});
+
+export const getUnenrolledStudents = asyncHandler(async (req, res) => {
+  const { courseId } = req.params;
+  const students = await ContentService.getUnenrolledStudents(courseId);
+  res.status(200).json({
+    status: 'success',
+    data: students,
+  });
+});
+
+export const getEnrollmentStats = asyncHandler(async (req, res) => {
+  const stats = await ContentService.getEnrollmentStats();
+  res.status(200).json({
+    status: 'success',
+    data: stats,
+  });
+});
+

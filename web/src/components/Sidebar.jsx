@@ -3,6 +3,18 @@ import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../hooks/useAppStore';
 import { useDispatch } from 'react-redux';
 import { logout } from '../store/authSlice';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { 
+  faHome, 
+  faBook, 
+  faChartBar, 
+  faGraduationCap, 
+  faCog, 
+  faUser, 
+  faSignOutAlt,
+  faLock,
+  faEnvelope
+} from '@fortawesome/free-solid-svg-icons';
 
 export const Sidebar = () => {
   const { user, token } = useAuth();
@@ -38,8 +50,8 @@ export const Sidebar = () => {
       {/* Sidebar */}
       <aside
         className={`fixed left-0 top-0 h-screen bg-white border-r border-gray-200 shadow-lg transition-transform duration-300 z-50 ${
-          isOpen ? 'translate-x-0 w-64' : '-translate-x-full w-64 md:translate-x-0 md:w-20'
-        } md:relative md:translate-x-0 overflow-y-auto`}
+          isOpen ? 'translate-x-0 w-64' : '-translate-x-full w-64'
+        } md:relative md:translate-x-0 md:w-64 overflow-y-auto`}
       >
         {/* Header */}
         <div className="p-4 border-b border-gray-200 flex items-center justify-between">
@@ -50,7 +62,7 @@ export const Sidebar = () => {
           )}
           <button
             onClick={() => setIsOpen(!isOpen)}
-            className="hidden md:block p-2 hover:bg-gray-100 rounded"
+            className="md:hidden p-2 hover:bg-gray-100 rounded"
             title={isOpen ? 'Collapse' : 'Expand'}
           >
             {isOpen ? '◀' : '▶'}
@@ -84,13 +96,13 @@ export const Sidebar = () => {
           </p>
           <Link to="/" className={getLinkClass('/')}>
             <span className="flex items-center gap-2">
-              <span>🏠</span>
+              <FontAwesomeIcon icon={faHome} className="w-5" />
               {isOpen && <span>Home</span>}
             </span>
           </Link>
           <Link to="/courses" className={getLinkClass('/courses')}>
             <span className="flex items-center gap-2">
-              <span>📚</span>
+              <FontAwesomeIcon icon={faBook} className="w-5" />
               {isOpen && <span>Courses</span>}
             </span>
           </Link>
@@ -108,8 +120,14 @@ export const Sidebar = () => {
                   </p>
                   <Link to="/dashboard" className={getLinkClass('/dashboard')}>
                     <span className="flex items-center gap-2">
-                      <span>📊</span>
+                      <FontAwesomeIcon icon={faChartBar} className="w-5" />
                       {isOpen && <span>Dashboard</span>}
+                    </span>
+                  </Link>
+                  <Link to="/queries" className={getLinkClass('/queries')}>
+                    <span className="flex items-center gap-2">
+                      <FontAwesomeIcon icon={faEnvelope} className="w-5" />
+                      {isOpen && <span>My Queries</span>}
                     </span>
                   </Link>
                 </>
@@ -122,7 +140,7 @@ export const Sidebar = () => {
                   </p>
                   <Link to="/educator-dashboard" className={getLinkClass('/educator-dashboard')}>
                     <span className="flex items-center gap-2">
-                      <span>🎓</span>
+                      <FontAwesomeIcon icon={faGraduationCap} className="w-5" />
                       {isOpen && <span>My Courses</span>}
                     </span>
                   </Link>
@@ -136,7 +154,7 @@ export const Sidebar = () => {
                   </p>
                   <Link to="/admin-dashboard" className={getLinkClass('/admin-dashboard')}>
                     <span className="flex items-center gap-2">
-                      <span>⚙️</span>
+                      <FontAwesomeIcon icon={faCog} className="w-5" />
                       {isOpen && <span>Admin Panel</span>}
                     </span>
                   </Link>
@@ -150,7 +168,7 @@ export const Sidebar = () => {
               </p>
               <Link to="/profile" className={getLinkClass('/profile')}>
                 <span className="flex items-center gap-2">
-                  <span>👤</span>
+                  <FontAwesomeIcon icon={faUser} className="w-5" />
                   {isOpen && <span>Profile</span>}
                 </span>
               </Link>
@@ -159,7 +177,7 @@ export const Sidebar = () => {
                 className="block px-4 py-2 rounded transition-colors text-left w-full text-gray-700 hover:bg-red-50 hover:text-red-600"
               >
                 <span className="flex items-center gap-2">
-                  <span>🚪</span>
+                  <FontAwesomeIcon icon={faSignOutAlt} className="w-5" />
                   {isOpen && <span>Logout</span>}
                 </span>
               </button>
@@ -174,13 +192,13 @@ export const Sidebar = () => {
               </p>
               <Link to="/login" className={getLinkClass('/login')}>
                 <span className="flex items-center gap-2">
-                  <span>🔐</span>
+                  <FontAwesomeIcon icon={faLock} className="w-5" />
                   {isOpen && <span>Login</span>}
                 </span>
               </Link>
               <Link to="/register" className={getLinkClass('/register')}>
                 <span className="flex items-center gap-2">
-                  <span>✍️</span>
+                  <FontAwesomeIcon icon={faUser} className="w-5" />
                   {isOpen && <span>Register</span>}
                 </span>
               </Link>
@@ -190,7 +208,7 @@ export const Sidebar = () => {
       </aside>
 
       {/* Spacer for content */}
-      {isOpen && <div className="fixed left-0 top-0 w-64 h-screen hidden md:block" />}
+      <div className="hidden md:block w-64 flex-shrink-0" />
     </>
   );
 };

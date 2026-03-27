@@ -59,6 +59,21 @@ CREATE TABLE IF NOT EXISTS chatbot_interactions (
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
+-- Student Queries table
+CREATE TABLE IF NOT EXISTS student_queries (
+  id UUID PRIMARY KEY,
+  student_id UUID NOT NULL REFERENCES users(id),
+  admin_id UUID REFERENCES users(id),
+  subject VARCHAR(255) NOT NULL,
+  message TEXT NOT NULL,
+  response TEXT,
+  course_id UUID REFERENCES courses(id),
+  status VARCHAR(50) NOT NULL CHECK (status IN ('open', 'in_progress', 'resolved')) DEFAULT 'open',
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  resolved_at TIMESTAMP
+);
+
 -- Create indexes for better performance
 CREATE INDEX IF NOT EXISTS idx_users_email ON users(email);
 CREATE INDEX IF NOT EXISTS idx_courses_category ON courses(category);
@@ -66,3 +81,6 @@ CREATE INDEX IF NOT EXISTS idx_lessons_course_id ON lessons(course_id);
 CREATE INDEX IF NOT EXISTS idx_progress_user_id ON progress(user_id);
 CREATE INDEX IF NOT EXISTS idx_progress_course_id ON progress(course_id);
 CREATE INDEX IF NOT EXISTS idx_chatbot_user_id ON chatbot_interactions(user_id);
+CREATE INDEX IF NOT EXISTS idx_student_queries_student_id ON student_queries(student_id);
+CREATE INDEX IF NOT EXISTS idx_student_queries_admin_id ON student_queries(admin_id);
+CREATE INDEX IF NOT EXISTS idx_student_queries_status ON student_queries(status);
