@@ -13,7 +13,8 @@ import {
   faUser, 
   faSignOutAlt,
   faLock,
-  faEnvelope
+  faEnvelope,
+  faRobot
 } from '@fortawesome/free-solid-svg-icons';
 
 export const Sidebar = () => {
@@ -128,6 +129,12 @@ export const Sidebar = () => {
                     <span className="flex items-center gap-2">
                       <FontAwesomeIcon icon={faEnvelope} className="w-5" />
                       {isOpen && <span>My Queries</span>}
+                    </span>
+                  </Link>
+                  <Link to="/ai-tutor" className={getLinkClass('/ai-tutor')}>
+                    <span className="flex items-center gap-2">
+                      <FontAwesomeIcon icon={faRobot} className="w-5" />
+                      {isOpen && <span>AI Tutor</span>}
                     </span>
                   </Link>
                 </>

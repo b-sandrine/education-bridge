@@ -73,6 +73,25 @@ export const chatbotAPI = {
   askQuestion: (data) => apiClient.post('/chatbot/ask', data),
 };
 
+// AI Learning Companion endpoints
+export const aiAPI = {
+  // Conversation management
+  createConversation: (data) => apiClient.post('/ai/conversations', data),
+  getConversations: (limit) => apiClient.get('/ai/conversations', { params: { limit } }),
+  getConversation: (conversationId) => apiClient.get(`/ai/conversations/${conversationId}`),
+  updateConversationTitle: (conversationId, title) => apiClient.put(`/ai/conversations/${conversationId}`, { title }),
+  deleteConversation: (conversationId) => apiClient.delete(`/ai/conversations/${conversationId}`),
+  
+  // Messaging
+  sendMessage: (conversationId, message, courseContext) => apiClient.post(
+    `/ai/conversations/${conversationId}/messages`,
+    { message, courseContext }
+  ),
+  
+  // Learning profile
+  getLearningProfile: () => apiClient.get('/ai/learning-profile'),
+};
+
 // Query endpoints
 export const queryAPI = {
   // Student endpoints

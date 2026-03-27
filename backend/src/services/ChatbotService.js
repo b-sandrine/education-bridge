@@ -2,33 +2,22 @@ import axios from 'axios';
 import logger from '../utils/logger.js';
 
 class ChatbotService {
-  static async generateResponse(query, courseContext = null, language = 'en') {
+  static async generateResponse(query, courseContext = null, language = 'en', contextData = {}) {
     try {
       const provider = process.env.AI_SERVICE_PROVIDER || 'openai';
+      const { conversationHistory = [], learningProfile = {} } = contextData;
 
-      let systemPrompt = 'You are an educational assistant helping students learn.';
-      
-      if (courseContext) {
-        systemPrompt = `You are an educational learning assistant. The student is learning about: ${courseContext}. 
-        
-Provide clear, helpful answers about this course. You can answer questions about:
-- What the course covers and learning objectives
-- Explanations of concepts taught in the course
-- How to approach problems related to the course material
-- Study tips and learning strategies
-- Clarifications of course content
-
-Be friendly, encouraging, and tailor your explanations to support active learning.`;
-      }
+      let systemPrompt = this.buildSystemPrompt(courseContext, learningProfile);
+      let messages = this.buildConversationMessages(query, systemPrompt, conversationHistory);
 
       // Route to appropriate provider
       if (provider === 'google') {
-        return await this.generateGoogleResponse(query, systemPrompt, language);
+        return await this.generateGoogleResponse(query, systemPrompt, language, conversationHistory);
       } else if (provider === 'anthropic') {
-        return await this.generateAnthropicResponse(query, systemPrompt, language);
+        return await this.generateAnthropicResponse(query, systemPrompt, language, conversationHistory);
       } else {
         // Default to OpenAI
-        return await this.generateOpenAIResponse(query, systemPrompt, language);
+        return await this.generateOpenAIResponse(query, systemPrompt, language, messages);
       }
     } catch (error) {
       logger.error('Chatbot error:', error);
@@ -43,18 +32,92 @@ Be friendly, encouraging, and tailor your explanations to support active learnin
     }
   }
 
-  static async generateOpenAIResponse(query, systemPrompt, language) {
+  /**
+   * Build system prompt based on course context and learning profile
+   */
+  static buildSystemPrompt(courseContext, learningProfile = {}) {
+    let systemPrompt = `You are an advanced educational AI learning companion that learns alongside students. 
+Your role is to:
+- Provide personalized explanations based on the student's learning level
+- Remember and reference previous discussions from this conversation
+- Adapt your teaching style based on feedback and student progress  
+- Ask clarifying questions to check understanding
+- Provide encouragement and celebrate learning milestones
+- Suggest related topics and deeper dives when appropriate
+
+Be friendly, encouraging,  interactive, and supportive. Use simple language but challenge them appropriately.`;
+
+    if (courseContext) {
+      systemPrompt += `
+
+CURRENT CONTEXT:
+The student is learning about: ${courseContext}
+
+Your answers should:
+- Focus on this course's learning objectives
+- Provide clear, structured explanations
+- Use examples from the course material
+- Check for understanding with follow-up questions
+- Suggest practice problems or activities when relevant`;
+    }
+
+    if (learningProfile?.total_conversations > 0) {
+      systemPrompt += `
+
+STUDENT PROFILE:
+- Learning History: ${learningProfile.total_conversations} conversations (${learningProfile.total_messages} messages)
+- Topics Covered: ${Object.keys(learningProfile.topics_covered || {}).join(', ') || 'Various topics'}
+- Learning Pattern: ${learningProfile.total_conversations > 5 ? 'Regular learner - encourage consistency' : 'Beginning learner - provide extra support'}`;
+    }
+
+    return systemPrompt;
+  }
+
+  /**
+   * Build conversation messages including history
+   */
+  static buildConversationMessages(query, systemPrompt, conversationHistory = []) {
+    const messages = [{ role: 'system', content: systemPrompt }];
+    
+    // Add recent conversation history for context
+    if (Array.isArray(conversationHistory) && conversationHistory.length > 0) {
+      conversationHistory.forEach(msg => {
+        messages.push({
+          role: msg.role,
+          content: msg.content,
+        });
+      });
+    }
+    
+    // Add current query
+    messages.push({ role: 'user', content: query });
+    
+    return messages;
+  }
+
+  static async generateOpenAIResponse(query, systemPrompt, language, messages = null) {
+    // If messages array is provided, use it; otherwise build from query
+    const payload = messages 
+      ? {
+          model: process.env.AI_MODEL || 'gpt-3.5-turbo',
+          messages: messages,
+          temperature: 0.7,
+          max_tokens: 1000,
+          top_p: 0.9,
+        }
+      : {
+          model: process.env.AI_MODEL || 'gpt-3.5-turbo',
+          messages: [
+            { role: 'system', content: systemPrompt },
+            { role: 'user', content: query },
+          ],
+          temperature: 0.7,
+          max_tokens: 1000,
+        };
+
     const response = await axios.post(
       process.env.AI_API_URL || 'https://api.openai.com/v1/chat/completions',
-      {
-        model: process.env.AI_MODEL || 'gpt-3.5-turbo',
-        messages: [
-          { role: 'system', content: systemPrompt },
-          { role: 'user', content: query },
-        ],
-        temperature: 0.7,
-        max_tokens: 500,
-      },
+      payload,
       {
         headers: {
           Authorization: `Bearer ${process.env.AI_API_KEY}`,

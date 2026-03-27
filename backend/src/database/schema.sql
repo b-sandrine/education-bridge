@@ -74,10 +74,42 @@ CREATE TABLE IF NOT EXISTS student_queries (
   resolved_at TIMESTAMP
 );
 
+-- AI Conversations table (stores conversation sessions)
+CREATE TABLE IF NOT EXISTS ai_conversations (
+  id UUID PRIMARY KEY,
+  student_id UUID NOT NULL REFERENCES users(id),
+  course_id UUID REFERENCES courses(id),
+  title VARCHAR(255) NOT NULL,
+  topic VARCHAR(100),
+  learning_level VARCHAR(50),
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- AI Chat Messages table (stores full conversation history)
+CREATE TABLE IF NOT EXISTS ai_chat_messages (
+  id UUID PRIMARY KEY,
+  conversation_id UUID NOT NULL REFERENCES ai_conversations(id) ON DELETE CASCADE,
+  student_id UUID NOT NULL REFERENCES users(id),
+  role VARCHAR(20) NOT NULL CHECK (role IN ('user', 'assistant')),
+  content TEXT NOT NULL,
+  message_order INT NOT NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
 -- Create indexes for better performance
 CREATE INDEX IF NOT EXISTS idx_users_email ON users(email);
 CREATE INDEX IF NOT EXISTS idx_courses_category ON courses(category);
 CREATE INDEX IF NOT EXISTS idx_lessons_course_id ON lessons(course_id);
+CREATE INDEX IF NOT EXISTS idx_ai_conversations_student ON ai_conversations(student_id);
+CREATE INDEX IF NOT EXISTS idx_ai_conversations_course ON ai_conversations(course_id);
+CREATE INDEX IF NOT EXISTS idx_ai_chat_messages_conversation ON ai_chat_messages(conversation_id);
+CREATE INDEX IF NOT EXISTS idx_ai_chat_messages_student ON ai_chat_messages(student_id);
+CREATE INDEX IF NOT EXISTS idx_student_queries_student ON student_queries(student_id);
+CREATE INDEX IF NOT EXISTS idx_student_queries_admin ON student_queries(admin_id);
+CREATE INDEX IF NOT EXISTS idx_student_queries_status ON student_queries(status);
+CREATE INDEX IF NOT EXISTS idx_chatbot_interactions_user ON chatbot_interactions(user_id);
+CREATE INDEX IF NOT EXISTS idx_progress_user_course ON progress(user_id, course_id);
 CREATE INDEX IF NOT EXISTS idx_progress_user_id ON progress(user_id);
 CREATE INDEX IF NOT EXISTS idx_progress_course_id ON progress(course_id);
 CREATE INDEX IF NOT EXISTS idx_chatbot_user_id ON chatbot_interactions(user_id);
