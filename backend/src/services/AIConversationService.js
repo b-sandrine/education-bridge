@@ -166,10 +166,6 @@ class AIConversationService {
       SELECT 
         COUNT(DISTINCT ac.id) as total_conversations,
         COUNT(acm.id) as total_messages,
-        json_object_agg(
-          DISTINCT ac.topic,
-          COUNT(acm.id)
-        ) FILTER (WHERE acm.id IS NOT NULL) as topics_covered,
         MIN(ac.created_at) as first_interaction,
         MAX(acm.created_at) as last_interaction
       FROM ai_conversations ac
@@ -177,7 +173,30 @@ class AIConversationService {
       WHERE ac.student_id = $1
     `;
     const result = await pool.query(query, [studentId]);
-    return result.rows[0];
+    const profile = result.rows[0];
+
+    // Get topics covered separately
+    const topicsQuery = `
+      SELECT 
+        ac.topic,
+        COUNT(acm.id) as message_count
+      FROM ai_conversations ac
+      LEFT JOIN ai_chat_messages acm ON ac.id = acm.conversation_id
+      WHERE ac.student_id = $1 AND ac.topic IS NOT NULL
+      GROUP BY ac.topic
+    `;
+    const topicsResult = await pool.query(topicsQuery, [studentId]);
+    
+    // Convert topics to object
+    const topics_covered = {};
+    topicsResult.rows.forEach(row => {
+      topics_covered[row.topic] = row.message_count;
+    });
+
+    return {
+      ...profile,
+      topics_covered: Object.keys(topics_covered).length > 0 ? topics_covered : null
+    };
   }
 }
 

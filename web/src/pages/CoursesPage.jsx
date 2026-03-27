@@ -43,9 +43,9 @@ export const CoursesPage = () => {
   if (loading) return <div className="text-center py-8">Loading courses...</div>;
 
   return (
-    <div className="min-h-screen bg-gray-100 py-8 px-6 w-full ml-0">
+    <div className="min-h-screen bg-gradient-to-b from-blue-50 to-white py-8 px-6 w-full ml-0">
       <div className="mb-8">
-        <h1 className="text-4xl font-bold mb-2 flex items-center gap-3">
+        <h1 className="text-4xl font-bold mb-2 flex items-center gap-3 text-gray-900">
           <FontAwesomeIcon icon={faBook} className="text-blue-600" />
           Available Courses
         </h1>

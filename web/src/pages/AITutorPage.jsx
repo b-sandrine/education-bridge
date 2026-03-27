@@ -192,7 +192,7 @@ export const AITutorPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-100 py-8 px-6 w-full ml-0">
+    <div className="min-h-screen bg-gradient-to-b from-purple-50 to-white py-8 px-6 w-full ml-0">
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 h-full">
         {/* Sidebar - Conversations List */}
         <div className="lg:col-span-1">

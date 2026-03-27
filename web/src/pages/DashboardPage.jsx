@@ -37,33 +37,34 @@ export const DashboardPage = () => {
   const inProgressCourses = userProgress.filter(p => p.status === 'in_progress').length;
 
   return (
-    <div className="min-h-screen bg-gray-100 py-8 px-6 w-full ml-0">
-      <h1 className="text-3xl font-bold mb-8">Welcome, {user?.firstName}!</h1>
+    <div className="min-h-screen bg-gradient-to-b from-blue-50 to-white py-8 px-6 w-full ml-0">
+      <h1 className="text-4xl font-bold mb-2 text-gray-900">Welcome, {user?.firstName}!</h1>
+      <p className="text-gray-600 mb-8">Track your learning progress and continue your courses</p>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-        <Card>
+        <Card className="bg-gradient-to-br from-blue-500 to-blue-600 text-white shadow-lg">
           <div className="text-center">
-            <p className="text-gray-600 mb-2">Total Courses</p>
-            <p className="text-4xl font-bold text-blue-600">{userProgress.length}</p>
+            <p className="text-blue-100 mb-2 font-semibold">Total Courses</p>
+            <p className="text-5xl font-bold">{userProgress.length}</p>
           </div>
         </Card>
 
-        <Card>
+        <Card className="bg-gradient-to-br from-yellow-500 to-yellow-600 text-white shadow-lg">
           <div className="text-center">
-            <p className="text-gray-600 mb-2">In Progress</p>
-            <p className="text-4xl font-bold text-yellow-600">{inProgressCourses}</p>
+            <p className="text-yellow-100 mb-2 font-semibold">In Progress</p>
+            <p className="text-5xl font-bold">{inProgressCourses}</p>
           </div>
         </Card>
 
-        <Card>
+        <Card className="bg-gradient-to-br from-green-500 to-green-600 text-white shadow-lg">
           <div className="text-center">
-            <p className="text-gray-600 mb-2">Completed</p>
-            <p className="text-4xl font-bold text-green-600">{completedCourses}</p>
+            <p className="text-green-100 mb-2 font-semibold">Completed</p>
+            <p className="text-5xl font-bold">{completedCourses}</p>
           </div>
         </Card>
       </div>
 
-      <h2 className="text-2xl font-bold mb-4">Your Courses</h2>
+      <h2 className="text-3xl font-bold mb-6 text-gray-900">Your Courses</h2>
 
       {userProgress.length === 0 ? (
         <Card>

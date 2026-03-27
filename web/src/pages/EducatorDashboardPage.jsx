@@ -132,8 +132,8 @@ export const EducatorDashboardPage = () => {
 
   if (showForm || editingCourse) {
     return (
-      <div className="min-h-screen bg-gray-100 py-12 px-4">
-        <div className="max-w-4xl mx-auto">
+      <div className="min-h-screen bg-gray-100 py-12 px-6 w-full ml-0">
+        <div className="max-w-2xl mx-auto">
           <CourseForm
             initialData={editingCourse}
             onSubmit={editingCourse ? handleUpdateCourse : handleCreateCourse}
@@ -149,8 +149,8 @@ export const EducatorDashboardPage = () => {
 
   if (showLessonForm || editingLesson) {
     return (
-      <div className="min-h-screen bg-gray-100 py-12 px-4">
-        <div className="max-w-4xl mx-auto">
+      <div className="min-h-screen bg-gray-100 py-12 px-6 w-full ml-0">
+        <div className="max-w-2xl mx-auto">
           <LessonForm
             courseId={managingLessons.id}
             initialData={editingLesson}
@@ -167,7 +167,7 @@ export const EducatorDashboardPage = () => {
 
   if (managingLessons) {
     return (
-      <div className="min-h-screen bg-gray-100 py-12 px-4">
+      <div className="min-h-screen bg-gray-100 py-12 px-6 w-full ml-0">
         <div className="max-w-6xl mx-auto">
           <div className="mb-8 flex items-center justify-between">
             <div>
@@ -241,7 +241,7 @@ export const EducatorDashboardPage = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-100 py-12 px-6 w-full ml-0">
+    <div className="min-h-screen bg-gradient-to-b from-purple-50 to-white py-12 px-6 w-full ml-0">
       <div className="mb-8">
         <h1 className="text-4xl font-bold text-gray-900 mb-2">Educator Dashboard</h1>
           <p className="text-gray-600">Welcome back, {user?.firstName}! Manage your courses here.</p>
@@ -249,17 +249,16 @@ export const EducatorDashboardPage = () => {
 
         {error && <Alert type="error" message={error} className="mb-6" />}
 
-        <div className="mb-6 flex justify-between items-center">
-          <div className="flex gap-4 flex-wrap">
-            <Card className="bg-white px-6 py-4">
-              <p className="text-gray-600 text-sm">Total Courses</p>
-              <p className="text-3xl font-bold text-blue-600">{courses.length}</p>
-            </Card>
-          </div>
+        <div className="mb-6 flex justify-between items-center flex-wrap gap-4">
+          <Card className="bg-gradient-to-br from-purple-500 to-purple-600 text-white shadow-lg px-8 py-6">
+            <p className="text-purple-100 text-sm font-semibold">Total Courses</p>
+            <p className="text-4xl font-bold mt-2">{courses.length}</p>
+          </Card>
           <Button
             variant="primary"
             onClick={() => setShowForm(true)}
             disabled={loading}
+            className="bg-purple-600 hover:bg-purple-700"
           >
             + Create New Course
           </Button>
@@ -275,6 +274,7 @@ export const EducatorDashboardPage = () => {
             <Button
               variant="primary"
               onClick={() => setShowForm(true)}
+              className="bg-purple-600 hover:bg-purple-700"
             >
               Create Your First Course
             </Button>
@@ -282,7 +282,7 @@ export const EducatorDashboardPage = () => {
         ) : (
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
             {courses.map((course) => (
-              <Card key={course.id} className="flex flex-col">
+              <Card key={course.id} className="flex flex-col border-l-4 border-purple-500 hover:shadow-lg transition-shadow">
                 <h3 className="text-xl font-bold text-gray-900 mb-2">{course.title}</h3>
                 <p className="text-gray-600 text-sm mb-3 flex-grow">{course.description}</p>
                 

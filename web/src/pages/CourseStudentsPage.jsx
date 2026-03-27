@@ -44,7 +44,7 @@ export const CourseStudentsPage = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-100 py-8 px-6 w-full ml-0">
+    <div className="min-h-screen bg-gradient-to-b from-indigo-50 to-white py-8 px-6 w-full ml-0">
       <button
         onClick={() => navigate('/educator-dashboard')}
         className="text-blue-600 hover:text-blue-800 font-semibold mb-6"

@@ -234,10 +234,10 @@ export const AdminDashboardPage = () => {
   const COLORS = ['#3b82f6', '#8b5cf6', '#ec4899'];
 
   return (
-    <div className="min-h-screen bg-gray-100 py-12 px-6 w-full ml-0">
+    <div className="min-h-screen bg-gradient-to-b from-red-50 to-white py-12 px-6 w-full ml-0">
       <div className="mb-8">
         <h1 className="text-4xl font-bold text-gray-900 mb-2 flex items-center gap-3">
-          <FontAwesomeIcon icon={faChartBar} className="text-blue-600" />
+          <FontAwesomeIcon icon={faChartBar} className="text-red-600" />
           Admin Dashboard
         </h1>
         <p className="text-gray-600">System administration and monitoring</p>

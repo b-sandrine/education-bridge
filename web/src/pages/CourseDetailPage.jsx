@@ -58,7 +58,7 @@ export const CourseDetailPage = () => {
   if (!course) return <div className="text-center py-8 text-red-600">Course not found</div>;
 
   return (
-    <div className="min-h-screen bg-gray-100 py-8 px-6 w-full ml-0">
+    <div className="min-h-screen bg-gradient-to-b from-blue-50 to-white py-8 px-6 w-full ml-0">
       <Card>
           <h1 className="text-4xl font-bold mb-4">{course.title}</h1>
           <p className="text-gray-600 mb-4">{course.description}</p>

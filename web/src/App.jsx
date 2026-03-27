@@ -69,9 +69,9 @@ const AppContent = () => {
 
   return (
     <>
-      <div className="flex min-h-screen bg-gray-100">
+      <div className="flex h-screen bg-white">
         <Sidebar />
-        <div className="flex-1 flex flex-col w-full">
+        <div className="flex-1 flex flex-col overflow-hidden">
           <Navigation />
           <main className="flex-1 overflow-auto">
             <Routes>

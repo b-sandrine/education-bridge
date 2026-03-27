@@ -99,7 +99,7 @@ export const ProfilePage = () => {
 
   if (!user) {
     return (
-      <div className="min-h-screen bg-gray-100 py-12 px-4">
+      <div className="min-h-screen bg-gray-100 py-12 px-6 w-full ml-0">
         <div className="max-w-2xl mx-auto">
           <Card className="text-center py-12">
             <p className="text-gray-600 mb-4">Loading profile...</p>
@@ -110,7 +110,7 @@ export const ProfilePage = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-100 py-12 px-4">
+    <div className="min-h-screen bg-gradient-to-b from-orange-50 to-white py-12 px-6 w-full ml-0">
       <div className="max-w-2xl mx-auto">
         <div className="mb-8">
           <h1 className="text-4xl font-bold text-gray-900">My Profile</h1>

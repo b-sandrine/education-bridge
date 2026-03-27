@@ -21,7 +21,8 @@ export const Sidebar = () => {
   const { user, token } = useAuth();
   const dispatch = useDispatch();
   const location = useLocation();
-  const [isOpen, setIsOpen] = useState(true);
+  const [isMobileOpen, setIsMobileOpen] = useState(false);
+  const [isDesktopOpen, setIsDesktopOpen] = useState(true);
 
   const handleLogout = () => {
     dispatch(logout());
@@ -41,37 +42,47 @@ export const Sidebar = () => {
   return (
     <>
       {/* Backdrop for mobile */}
-      {isOpen && (
+      {isMobileOpen && (
         <div
           className="fixed inset-0 bg-black bg-opacity-50 md:hidden z-40"
-          onClick={() => setIsOpen(false)}
+          onClick={() => setIsMobileOpen(false)}
         />
       )}
 
       {/* Sidebar */}
       <aside
-        className={`fixed left-0 top-0 h-screen bg-white border-r border-gray-200 shadow-lg transition-transform duration-300 z-50 ${
-          isOpen ? 'translate-x-0 w-64' : '-translate-x-full w-64'
-        } md:relative md:translate-x-0 md:w-64 overflow-y-auto`}
+        className={`fixed left-0 top-0 h-screen bg-white border-r border-gray-200 shadow-lg transition-all duration-300 z-50 md:relative md:z-0 ${
+          isMobileOpen ? 'translate-x-0 w-64' : '-translate-x-full w-64'
+        } md:translate-x-0 ${isDesktopOpen ? 'md:w-64' : 'md:w-20'} overflow-y-hidden flex flex-col`}
       >
         {/* Header */}
-        <div className="p-4 border-b border-gray-200 flex items-center justify-between">
-          {isOpen && (
-            <Link to="/" className="text-xl font-bold text-blue-600 flex-1">
+        <div className="p-4 border-b border-gray-200 flex items-center justify-between flex-shrink-0">
+          {isDesktopOpen && (
+            <Link to="/" className="text-xl font-bold text-blue-600 flex-1 hidden md:block">
               EduBridge
             </Link>
           )}
           <button
-            onClick={() => setIsOpen(!isOpen)}
+            onClick={() => {
+              const newMobileState = !isMobileOpen;
+              setIsMobileOpen(newMobileState);
+            }}
             className="md:hidden p-2 hover:bg-gray-100 rounded"
-            title={isOpen ? 'Collapse' : 'Expand'}
+            title={isMobileOpen ? 'Collapse' : 'Expand'}
           >
-            {isOpen ? '◀' : '▶'}
+            {isMobileOpen ? '◀' : '▶'}
+          </button>
+          <button
+            onClick={() => setIsDesktopOpen(!isDesktopOpen)}
+            className="hidden md:block p-2 hover:bg-gray-100 rounded ml-auto"
+            title={isDesktopOpen ? 'Collapse' : 'Expand'}
+          >
+            {isDesktopOpen ? '◀' : '▶'}
           </button>
         </div>
 
         {/* User Profile Section */}
-        {isOpen && (
+        {isMobileOpen && isDesktopOpen && (
           <div className="p-4 bg-blue-50 border-b border-gray-200">
             <Link to="/profile" className="hover:opacity-80">
               <p className="text-sm font-semibold text-gray-900">{user?.firstName} {user?.lastName}</p>
@@ -80,7 +91,7 @@ export const Sidebar = () => {
                 <span className={`text-xs font-bold px-2 py-1 rounded inline-block ${
                   user?.role === 'admin' ? 'bg-red-100 text-red-800' :
                   user?.role === 'educator' ? 'bg-blue-100 text-blue-800' :
-                  'bg-green-100 text-green-800'
+                  'bg-green-100 text- overflow-y-auto flex-1green-800'
                 }`}>
                   {user?.role?.charAt(0).toUpperCase() + user?.role?.slice(1)}
                 </span>
@@ -92,19 +103,19 @@ export const Sidebar = () => {
         {/* Navigation */}
         <nav className="p-4 space-y-2">
           {/* Public Links */}
-          <p className={`text-xs font-semibold text-gray-500 uppercase tracking-wider ${!isOpen ? 'text-center' : ''}`}>
-            {isOpen ? 'Main' : ''}
+          <p className={`text-xs font-semibold text-gray-500 uppercase tracking-wider ${!isDesktopOpen ? 'text-center' : ''}`}>
+            {isDesktopOpen ? 'Main' : ''}
           </p>
           <Link to="/" className={getLinkClass('/')}>
             <span className="flex items-center gap-2">
               <FontAwesomeIcon icon={faHome} className="w-5" />
-              {isOpen && <span>Home</span>}
+              {isDesktopOpen && <span>Home</span>}
             </span>
           </Link>
           <Link to="/courses" className={getLinkClass('/courses')}>
             <span className="flex items-center gap-2">
               <FontAwesomeIcon icon={faBook} className="w-5" />
-              {isOpen && <span>Courses</span>}
+              {isDesktopOpen && <span>Courses</span>}
             </span>
           </Link>
 
@@ -116,25 +127,25 @@ export const Sidebar = () => {
               {/* Role-Based Links */}
               {user?.role === 'student' && (
                 <>
-                  <p className={`text-xs font-semibold text-gray-500 uppercase tracking-wider ${!isOpen ? 'text-center' : ''}`}>
-                    {isOpen ? 'Student' : ''}
+                  <p className={`text-xs font-semibold text-gray-500 uppercase tracking-wider ${!isDesktopOpen ? 'text-center' : ''}`}>
+                    {isDesktopOpen ? 'Student' : ''}
                   </p>
                   <Link to="/dashboard" className={getLinkClass('/dashboard')}>
                     <span className="flex items-center gap-2">
                       <FontAwesomeIcon icon={faChartBar} className="w-5" />
-                      {isOpen && <span>Dashboard</span>}
+                      {isDesktopOpen && <span>Dashboard</span>}
                     </span>
                   </Link>
                   <Link to="/queries" className={getLinkClass('/queries')}>
                     <span className="flex items-center gap-2">
                       <FontAwesomeIcon icon={faEnvelope} className="w-5" />
-                      {isOpen && <span>My Queries</span>}
+                      {isDesktopOpen && <span>My Queries</span>}
                     </span>
                   </Link>
                   <Link to="/ai-tutor" className={getLinkClass('/ai-tutor')}>
                     <span className="flex items-center gap-2">
                       <FontAwesomeIcon icon={faRobot} className="w-5" />
-                      {isOpen && <span>AI Tutor</span>}
+                      {isDesktopOpen && <span>AI Tutor</span>}
                     </span>
                   </Link>
                 </>
@@ -142,13 +153,13 @@ export const Sidebar = () => {
 
               {user?.role === 'educator' && (
                 <>
-                  <p className={`text-xs font-semibold text-gray-500 uppercase tracking-wider ${!isOpen ? 'text-center' : ''}`}>
-                    {isOpen ? 'Educator' : ''}
+                  <p className={`text-xs font-semibold text-gray-500 uppercase tracking-wider ${!isDesktopOpen ? 'text-center' : ''}`}>
+                    {isDesktopOpen ? 'Educator' : ''}
                   </p>
                   <Link to="/educator-dashboard" className={getLinkClass('/educator-dashboard')}>
                     <span className="flex items-center gap-2">
                       <FontAwesomeIcon icon={faGraduationCap} className="w-5" />
-                      {isOpen && <span>My Courses</span>}
+                      {isDesktopOpen && <span>My Courses</span>}
                     </span>
                   </Link>
                 </>
@@ -156,13 +167,13 @@ export const Sidebar = () => {
 
               {user?.role === 'admin' && (
                 <>
-                  <p className={`text-xs font-semibold text-gray-500 uppercase tracking-wider ${!isOpen ? 'text-center' : ''}`}>
-                    {isOpen ? 'Admin' : ''}
+                  <p className={`text-xs font-semibold text-gray-500 uppercase tracking-wider ${!isDesktopOpen ? 'text-center' : ''}`}>
+                    {isDesktopOpen ? 'Admin' : ''}
                   </p>
                   <Link to="/admin-dashboard" className={getLinkClass('/admin-dashboard')}>
                     <span className="flex items-center gap-2">
                       <FontAwesomeIcon icon={faCog} className="w-5" />
-                      {isOpen && <span>Admin Panel</span>}
+                      {isDesktopOpen && <span>Admin Panel</span>}
                     </span>
                   </Link>
                 </>
@@ -170,13 +181,13 @@ export const Sidebar = () => {
 
               {/* Account Section */}
               <div className="my-2 border-t border-gray-200" />
-              <p className={`text-xs font-semibold text-gray-500 uppercase tracking-wider ${!isOpen ? 'text-center' : ''}`}>
-                {isOpen ? 'Account' : ''}
+              <p className={`text-xs font-semibold text-gray-500 uppercase tracking-wider ${!isDesktopOpen ? 'text-center' : ''}`}>
+                {isDesktopOpen ? 'Account' : ''}
               </p>
               <Link to="/profile" className={getLinkClass('/profile')}>
                 <span className="flex items-center gap-2">
                   <FontAwesomeIcon icon={faUser} className="w-5" />
-                  {isOpen && <span>Profile</span>}
+                  {isDesktopOpen && <span>Profile</span>}
                 </span>
               </Link>
               <button
@@ -185,7 +196,7 @@ export const Sidebar = () => {
               >
                 <span className="flex items-center gap-2">
                   <FontAwesomeIcon icon={faSignOutAlt} className="w-5" />
-                  {isOpen && <span>Logout</span>}
+                  {isDesktopOpen && <span>Logout</span>}
                 </span>
               </button>
             </>
@@ -194,28 +205,25 @@ export const Sidebar = () => {
           {!token && (
             <>
               <div className="my-2 border-t border-gray-200" />
-              <p className={`text-xs font-semibold text-gray-500 uppercase tracking-wider ${!isOpen ? 'text-center' : ''}`}>
-                {isOpen ? 'Auth' : ''}
+              <p className={`text-xs font-semibold text-gray-500 uppercase tracking-wider ${!isDesktopOpen ? 'text-center' : ''}`}>
+                {isDesktopOpen ? 'Auth' : ''}
               </p>
               <Link to="/login" className={getLinkClass('/login')}>
                 <span className="flex items-center gap-2">
                   <FontAwesomeIcon icon={faLock} className="w-5" />
-                  {isOpen && <span>Login</span>}
+                  {isDesktopOpen && <span>Login</span>}
                 </span>
               </Link>
               <Link to="/register" className={getLinkClass('/register')}>
                 <span className="flex items-center gap-2">
                   <FontAwesomeIcon icon={faUser} className="w-5" />
-                  {isOpen && <span>Register</span>}
+                  {isDesktopOpen && <span>Register</span>}
                 </span>
               </Link>
             </>
           )}
         </nav>
       </aside>
-
-      {/* Spacer for content */}
-      <div className="hidden md:block w-64 flex-shrink-0" />
     </>
   );
 };
