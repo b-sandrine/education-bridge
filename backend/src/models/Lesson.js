@@ -9,13 +9,15 @@ class Lesson {
       VALUES ($1, $2, $3, $4, $5, $6, NOW(), NOW())
       RETURNING *
     `;
+    // Support both lessonOrder and order field names
+    const order = lessonData.lessonOrder || lessonData.order || 1;
     const result = await pool.query(query, [
       id,
       lessonData.courseId,
       lessonData.title,
       lessonData.content,
-      lessonData.videoUrl || null,
-      lessonData.lessonOrder || 1,
+      lessonData.videoUrl || lessonData.video_url || null,
+      order,
     ]);
     return result.rows[0];
   }
@@ -47,14 +49,16 @@ class Lesson {
       values.push(lessonData.content);
       paramIndex++;
     }
-    if (lessonData.lessonOrder) {
+    // Handle both lessonOrder and order field names
+    const order = lessonData.lessonOrder || lessonData.order;
+    if (order) {
       updates.push(`lesson_order = $${paramIndex}`);
-      values.push(lessonData.lessonOrder);
+      values.push(order);
       paramIndex++;
     }
-    if (lessonData.videoUrl !== undefined) {
+    if (lessonData.videoUrl !== undefined || lessonData.video_url !== undefined) {
       updates.push(`video_url = $${paramIndex}`);
-      values.push(lessonData.videoUrl);
+      values.push(lessonData.videoUrl || lessonData.video_url);
       paramIndex++;
     }
 

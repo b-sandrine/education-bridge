@@ -33,8 +33,10 @@ export const lessonSchema = Joi.object({
   title: Joi.string().required(),
   content: Joi.string().required(),
   videoUrl: Joi.string().uri().optional(),
-  order: Joi.number().positive().required(),
-});
+  video_url: Joi.string().uri().optional(),
+  lessonOrder: Joi.number().positive().optional(),
+  order: Joi.number().positive().optional(),
+}).or('lessonOrder', 'order');
 
 export const chatbotQuerySchema = Joi.object({
   message: Joi.string().required(),
