@@ -241,10 +241,9 @@ export const EducatorDashboardPage = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-100 py-12 px-4">
-      <div className="max-w-6xl mx-auto">
-        <div className="mb-8">
-          <h1 className="text-4xl font-bold text-gray-900 mb-2">Educator Dashboard</h1>
+    <div className="min-h-screen bg-gray-100 py-12 px-6 w-full ml-0">
+      <div className="mb-8">
+        <h1 className="text-4xl font-bold text-gray-900 mb-2">Educator Dashboard</h1>
           <p className="text-gray-600">Welcome back, {user?.firstName}! Manage your courses here.</p>
         </div>
 
@@ -339,7 +338,6 @@ export const EducatorDashboardPage = () => {
             ))}
           </div>
         )}
-      </div>
     </div>
   );
 };

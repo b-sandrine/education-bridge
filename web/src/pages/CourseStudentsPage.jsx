@@ -44,22 +44,20 @@ export const CourseStudentsPage = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-100 py-8 px-4">
-      <div className="max-w-6xl mx-auto">
-        <button
-          onClick={() => navigate('/educator-dashboard')}
-          className="text-blue-600 hover:text-blue-800 font-semibold mb-6"
-        >
-          ← Back to Dashboard
-        </button>
+    <div className="min-h-screen bg-gray-100 py-8 px-6 w-full ml-0">
+      <button
+        onClick={() => navigate('/educator-dashboard')}
+        className="text-blue-600 hover:text-blue-800 font-semibold mb-6"
+      >
+        ← Back to Dashboard
+      </button>
 
-        <Card className="mb-6">
-          <h1 className="text-3xl font-bold mb-2">{course.title}</h1>
-          <p className="text-gray-600">{course.description}</p>
-        </Card>
+      <Card className="mb-6">
+        <h1 className="text-3xl font-bold mb-2">{course.title}</h1>
+        <p className="text-gray-600">{course.description}</p>
+      </Card>
 
-        <StudentProgressList courseId={courseId} courseLessons={lessons} />
-      </div>
+      <StudentProgressList courseId={courseId} courseLessons={lessons} />
     </div>
   );
 };

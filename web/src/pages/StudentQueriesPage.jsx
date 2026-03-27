@@ -102,15 +102,14 @@ export const StudentQueriesPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-100 py-12 px-4">
-      <div className="max-w-5xl mx-auto">
-        <div className="mb-8">
-          <h1 className="text-4xl font-bold text-gray-900 mb-2 flex items-center gap-3">
-            <FontAwesomeIcon icon={faEnvelope} className="text-blue-600" />
-            Help & Support
-          </h1>
-          <p className="text-gray-600">Submit your queries and get support from admins</p>
-        </div>
+    <div className="min-h-screen bg-gray-100 py-12 px-6 w-full ml-0">
+      <div className="mb-8">
+        <h1 className="text-4xl font-bold text-gray-900 mb-2 flex items-center gap-3">
+          <FontAwesomeIcon icon={faEnvelope} className="text-blue-600" />
+          Help & Support
+        </h1>
+        <p className="text-gray-600">Submit your queries and get support from admins</p>
+      </div>
 
       {/* Navigation Tabs */}
       <div className="flex gap-4 mb-8">
@@ -259,7 +258,6 @@ export const StudentQueriesPage = () => {
           )}
         </div>
       )}
-      </div>
     </div>
   );
 };

@@ -43,15 +43,14 @@ export const CoursesPage = () => {
   if (loading) return <div className="text-center py-8">Loading courses...</div>;
 
   return (
-    <div className="min-h-screen bg-gray-100 py-8 px-4">
-      <div className="max-w-7xl mx-auto">
-        <div className="mb-8">
-          <h1 className="text-4xl font-bold mb-2 flex items-center gap-3">
-            <FontAwesomeIcon icon={faBook} className="text-blue-600" />
-            Available Courses
-          </h1>
-          <p className="text-gray-600">Explore our collection of educational courses</p>
-        </div>
+    <div className="min-h-screen bg-gray-100 py-8 px-6 w-full ml-0">
+      <div className="mb-8">
+        <h1 className="text-4xl font-bold mb-2 flex items-center gap-3">
+          <FontAwesomeIcon icon={faBook} className="text-blue-600" />
+          Available Courses
+        </h1>
+        <p className="text-gray-600">Explore our collection of educational courses</p>
+      </div>
 
       {courses.length === 0 ? (
         <Card className="text-center py-12">
@@ -182,7 +181,6 @@ export const CoursesPage = () => {
           </Card>
         </div>
       )}
-      </div>
     </div>
   );
 };
