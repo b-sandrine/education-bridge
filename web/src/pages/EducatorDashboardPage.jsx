@@ -47,11 +47,11 @@ export const EducatorDashboardPage = () => {
       setLoading(true);
       setError(null);
       const response = await contentAPI.getAllCourses({ educatorId: user?.id });
-      setCourses(response.data.data || []);
+      const coursesData = response.data.data || [];
+      setCourses(coursesData);
       
-      // Simulate fetching student data for analytics
-      const mockStudents = generateMockStudents(response.data.data?.length || 0);
-      setStudents(mockStudents);
+      // Fetch actual student data from all courses
+      await fetchAllStudentsFromCourses(coursesData);
     } catch (err) {
       const message = err.response?.data?.message || 'Failed to fetch courses';
       setError(message);
@@ -61,15 +61,41 @@ export const EducatorDashboardPage = () => {
     }
   };
 
-  const generateMockStudents = (courseCount) => {
-    // Mock student data - in production this would come from API
-    return [
-      { id: 1, firstName: 'John', lastName: 'Doe', email: 'john@example.com', progress: 85, score: 88, status: 'in-progress' },
-      { id: 2, firstName: 'Jane', lastName: 'Smith', email: 'jane@example.com', progress: 100, score: 92, status: 'completed' },
-      { id: 3, firstName: 'Alice', lastName: 'Johnson', email: 'alice@example.com', progress: 45, score: 72, status: 'in-progress' },
-      { id: 4, firstName: 'Bob', lastName: 'Williams', email: 'bob@example.com', progress: 60, score: 78, status: 'in-progress' },
-      { id: 5, firstName: 'Carol', lastName: 'Brown', email: 'carol@example.com', progress: 100, score: 95, status: 'completed' }
-    ];
+  const fetchAllStudentsFromCourses = async (coursesData) => {
+    try {
+      const allStudents = {};
+      
+      // Fetch students from each course and combine (avoiding duplicates)
+      for (const course of coursesData) {
+        try {
+          const studentResponse = await contentAPI.getCourseStudents(course.id);
+          const courseStudents = studentResponse.data.data || [];
+          
+          // Add students, updating if they already exist (to get latest progress)
+          courseStudents.forEach(student => {
+            allStudents[student.id] = {
+              id: student.id,
+              firstName: student.first_name,
+              lastName: student.last_name,
+              email: student.email,
+              progress: student.lessons_completed ? Math.round((student.lessons_completed / 10) * 100) : 0,
+              score: student.score || 0,
+              status: student.status || 'in_progress'
+            };
+          });
+        } catch (courseError) {
+          console.warn(`Failed to fetch students for course ${course.id}:`, courseError);
+          // Continue with other courses if one fails
+        }
+      }
+      
+      // Convert object to array
+      setStudents(Object.values(allStudents));
+    } catch (err) {
+      console.error('Failed to fetch students:', err);
+      // Set empty students array if fetch fails, but don't show error
+      setStudents([]);
+    }
   };
 
   const fetchLessons = async (courseId) => {

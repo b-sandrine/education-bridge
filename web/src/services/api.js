@@ -106,4 +106,33 @@ export const queryAPI = {
   updateQueryStatus: (id, status) => apiClient.put(`/admin/queries/${id}/status`, { status }),
 };
 
+// Quiz endpoints
+export const quizAPI = {
+  // Quiz CRUD
+  createQuiz: (data) => apiClient.post('/quiz/quizzes', data),
+  getQuiz: (quizId) => apiClient.get(`/quiz/quizzes/${quizId}`),
+  getAllQuizzes: (filters) => apiClient.get('/quiz/quizzes', { params: filters }),
+  getLessonQuiz: (lessonId) => apiClient.get(`/quiz/lessons/${lessonId}/quiz`),
+  updateQuiz: (quizId, data) => apiClient.put(`/quiz/quizzes/${quizId}`, data),
+  deleteQuiz: (quizId) => apiClient.delete(`/quiz/quizzes/${quizId}`),
+  
+  // Quiz Questions
+  getQuizQuestions: (quizId) => apiClient.get(`/quiz/quizzes/${quizId}/questions`),
+  createQuizQuestion: (quizId, data) => apiClient.post(`/quiz/quizzes/${quizId}/questions`, data),
+  updateQuizQuestion: (questionId, data) => apiClient.put(`/quiz/questions/${questionId}`, data),
+  deleteQuizQuestion: (questionId) => apiClient.delete(`/quiz/questions/${questionId}`),
+  
+  // Quiz Attempts
+  submitQuizAttempt: (quizId, data) => apiClient.post(`/quiz/quizzes/${quizId}/submit`, data),
+  getQuizAttempts: (quizId) => apiClient.get(`/quiz/quizzes/${quizId}/attempts`),
+  getQuizAttempt: (attemptId) => apiClient.get(`/quiz/attempts/${attemptId}`),
+  
+  // Student Performance
+  getStudentQuizPerformance: (courseId) => apiClient.get(`/quiz/courses/${courseId}/quiz-performance`),
+  
+  // Analytics
+  getCourseQuizzesAnalytics: (courseId) => apiClient.get(`/quiz/courses/${courseId}/quizzes-analytics`),
+  getQuizResults: (quizId) => apiClient.get(`/quiz/quizzes/${quizId}/results`),
+};
+
 export default apiClient;

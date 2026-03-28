@@ -15,6 +15,7 @@ import progressRoutes from './routes/progressRoutes.js';
 import chatbotRoutes from './routes/chatbotRoutes.js';
 import queryRoutes from './routes/queryRoutes.js';
 import aiRoutes from './routes/aiRoutes.js';
+import quizRoutes from './routes/quizRoutes.js';
 
 import swaggerUi from 'swagger-ui-express';
 import YAML from 'yaml';
@@ -77,6 +78,7 @@ app.use('/api/content', contentRoutes);
 app.use('/api/progress', progressRoutes);
 app.use('/api/chatbot', chatbotRoutes);
 app.use('/api/ai', aiRoutes);
+app.use('/api/quiz', quizRoutes);
 app.use('/api', queryRoutes);
 
 // Health check
