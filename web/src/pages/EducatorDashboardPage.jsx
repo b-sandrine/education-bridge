@@ -4,8 +4,20 @@ import { useNavigate } from 'react-router-dom';
 import { Button, Card, Alert } from '../components/CommonComponents';
 import { CourseForm } from '../components/CourseForm';
 import { LessonForm } from '../components/LessonForm';
+import { EducatorProgressAnalytics } from '../components/EducatorProgressAnalytics';
+import { StudentInsights } from '../components/StudentInsights';
 import { contentAPI } from '../services/api';
 import { useNotification } from '../hooks/useNotification';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faChartBar, faBook, faChalkboardUser, faStar } from '@fortawesome/free-solid-svg-icons';
+
+// Color scheme
+const colors = {
+  primary: '#1E3A8A',
+  accent: '#F97316',
+  background: '#F8FAFC',
+  text: '#0F172A'
+};
 
 export const EducatorDashboardPage = () => {
   const user = useSelector((state) => state.auth.user);
@@ -19,6 +31,9 @@ export const EducatorDashboardPage = () => {
   const [lessons, setLessons] = useState([]);
   const [showLessonForm, setShowLessonForm] = useState(false);
   const [editingLesson, setEditingLesson] = useState(null);
+  const [activeTab, setActiveTab] = useState('courses'); // "courses", "analytics", "student-insights"
+  const [selectedStudent, setSelectedStudent] = useState(null);
+  const [students, setStudents] = useState([]);
   const { showSuccess, showError } = useNotification();
 
   useEffect(() => {
@@ -33,6 +48,10 @@ export const EducatorDashboardPage = () => {
       setError(null);
       const response = await contentAPI.getAllCourses({ educatorId: user?.id });
       setCourses(response.data.data || []);
+      
+      // Simulate fetching student data for analytics
+      const mockStudents = generateMockStudents(response.data.data?.length || 0);
+      setStudents(mockStudents);
     } catch (err) {
       const message = err.response?.data?.message || 'Failed to fetch courses';
       setError(message);
@@ -40,6 +59,17 @@ export const EducatorDashboardPage = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  const generateMockStudents = (courseCount) => {
+    // Mock student data - in production this would come from API
+    return [
+      { id: 1, firstName: 'John', lastName: 'Doe', email: 'john@example.com', progress: 85, score: 88, status: 'in-progress' },
+      { id: 2, firstName: 'Jane', lastName: 'Smith', email: 'jane@example.com', progress: 100, score: 92, status: 'completed' },
+      { id: 3, firstName: 'Alice', lastName: 'Johnson', email: 'alice@example.com', progress: 45, score: 72, status: 'in-progress' },
+      { id: 4, firstName: 'Bob', lastName: 'Williams', email: 'bob@example.com', progress: 60, score: 78, status: 'in-progress' },
+      { id: 5, firstName: 'Carol', lastName: 'Brown', email: 'carol@example.com', progress: 100, score: 95, status: 'completed' }
+    ];
   };
 
   const fetchLessons = async (courseId) => {
@@ -241,103 +271,161 @@ export const EducatorDashboardPage = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-purple-50 to-white py-12 px-6 w-full ml-0">
+    <div className="min-h-screen py-12 px-6 w-full ml-0" style={{ backgroundColor: colors.background }}>
       <div className="mb-8">
-        <h1 className="text-4xl font-bold text-gray-900 mb-2">Educator Dashboard</h1>
-          <p className="text-gray-600">Welcome back, {user?.firstName}! Manage your courses here.</p>
-        </div>
+        <h1 className="text-4xl font-bold mb-2" style={{ color: colors.primary }}>Educator Dashboard</h1>
+        <p className="text-gray-600">Welcome back, {user?.firstName}! Manage your courses and track student progress.</p>
+      </div>
 
-        {error && <Alert type="error" message={error} className="mb-6" />}
+      {error && <Alert type="error" message={error} className="mb-6" />}
 
-        <div className="mb-6 flex justify-between items-center flex-wrap gap-4">
-          <Card className="bg-gradient-to-br from-purple-500 to-purple-600 text-white shadow-lg px-8 py-6">
-            <p className="text-purple-100 text-sm font-semibold">Total Courses</p>
-            <p className="text-4xl font-bold mt-2">{courses.length}</p>
-          </Card>
-          <Button
-            variant="primary"
-            onClick={() => setShowForm(true)}
-            disabled={loading}
-            className="bg-purple-600 hover:bg-purple-700"
+      {/* Navigation Tabs */}
+      <div className="flex gap-2 mb-6 border-b-2 flex-wrap" style={{ borderColor: colors.primary }}>
+        {['courses', 'analytics'].map((tab) => (
+          <button
+            key={tab}
+            onClick={() => {
+              setActiveTab(tab);
+              setSelectedStudent(null);
+            }}
+            className="px-6 py-3 font-semibold transition-all border-b-2 uppercase text-sm"
+            style={{
+              borderBottomColor: activeTab === tab ? colors.accent : 'transparent',
+              color: activeTab === tab ? colors.accent : colors.text,
+              backgroundColor: activeTab === tab ? `${colors.accent}10` : 'transparent'
+            }}
           >
-            + Create New Course
-          </Button>
-        </div>
+            <FontAwesomeIcon icon={tab === 'courses' ? faBook : faChartBar} className="mr-2" />
+            {tab === 'courses' ? 'My Courses' : 'Class Analytics'}
+          </button>
+        ))}
+      </div>
 
-        {loading ? (
-          <Card className="text-center py-12">
-            <p className="text-gray-600">Loading your courses...</p>
-          </Card>
-        ) : courses.length === 0 ? (
-          <Card className="text-center py-12">
-            <p className="text-gray-600 mb-4">You haven't created any courses yet.</p>
+      {/* Student Insights View */}
+      {selectedStudent && (
+        <div className="mb-6">
+          <StudentInsights 
+            student={selectedStudent}
+            lessons={lessons}
+            onBack={() => setSelectedStudent(null)}
+          />
+        </div>
+      )}
+
+      {/* Courses Tab */}
+      {activeTab === 'courses' && !selectedStudent && (
+        <>
+          <div className="mb-6 flex justify-between items-center flex-wrap gap-4">
+            <Card className="border-2" style={{ borderColor: colors.primary, backgroundColor: `${colors.primary}10` }}>
+              <div className="flex items-center gap-4">
+                <FontAwesomeIcon icon={faChalkboardUser} className="text-4xl" style={{ color: colors.accent }} />
+                <div>
+                  <p className="text-sm text-gray-600">Total Courses</p>
+                  <p className="text-4xl font-bold" style={{ color: colors.primary }}>{courses.length}</p>
+                </div>
+              </div>
+            </Card>
             <Button
               variant="primary"
               onClick={() => setShowForm(true)}
-              className="bg-purple-600 hover:bg-purple-700"
+              disabled={loading}
+              className="px-6 py-3 rounded-lg font-semibold text-white transition-all hover:shadow-lg"
+              style={{ backgroundColor: colors.accent }}
             >
-              Create Your First Course
+              <FontAwesomeIcon icon={faBook} className="mr-2" />
+              + Create New Course
             </Button>
-          </Card>
-        ) : (
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-            {courses.map((course) => (
-              <Card key={course.id} className="flex flex-col border-l-4 border-purple-500 hover:shadow-lg transition-shadow">
-                <h3 className="text-xl font-bold text-gray-900 mb-2">{course.title}</h3>
-                <p className="text-gray-600 text-sm mb-3 flex-grow">{course.description}</p>
-                
-                <div className="space-y-2 text-sm mb-4">
-                  <p className="text-gray-700">
-                    <span className="font-semibold">Category:</span> {course.category}
-                  </p>
-                  <p className="text-gray-700">
-                    <span className="font-semibold">Level:</span>{' '}
-                    <span className="capitalize">{course.level}</span>
-                  </p>
-                  <p className="text-gray-700">
-                    <span className="font-semibold">Duration:</span> {course.duration_weeks} weeks
-                  </p>
-                </div>
-
-                <div className="flex flex-col gap-2 pt-4 border-t border-gray-200">
-                  <Button
-                    variant="primary"
-                    onClick={() => {
-                      setManagingLessons(course);
-                      fetchLessons(course.id);
-                    }}
-                    className="w-full"
-                  >
-                    Manage Lessons
-                  </Button>
-                  <Button
-                    variant="primary"
-                    onClick={() => navigate(`/educator-dashboard/courses/${course.id}/students`)}
-                    className="w-full bg-green-600 hover:bg-green-700"
-                  >
-                    View Student Progress
-                  </Button>
-                  <div className="flex gap-2">
-                    <Button
-                      variant="secondary"
-                      onClick={() => setEditingCourse(course)}
-                      className="flex-1"
-                    >
-                      Edit
-                    </Button>
-                    <Button
-                      variant="danger"
-                      onClick={() => handleDeleteCourse(course.id)}
-                      className="flex-1"
-                    >
-                      Delete
-                    </Button>
-                  </div>
-                </div>
-              </Card>
-            ))}
           </div>
-        )}
+
+          {loading ? (
+            <Card className="text-center py-12 border-2" style={{ borderColor: colors.primary }}>
+              <p className="text-gray-600">Loading your courses...</p>
+            </Card>
+          ) : courses.length === 0 ? (
+            <Card className="text-center py-12 border-2" style={{ borderColor: colors.primary }}>
+              <FontAwesomeIcon icon={faBook} className="text-5xl mb-4" style={{ color: colors.accent }} />
+              <p className="text-gray-600 mb-4">You haven't created any courses yet.</p>
+              <Button
+                variant="primary"
+                onClick={() => setShowForm(true)}
+                className="px-6 py-2 rounded-lg font-semibold text-white"
+                style={{ backgroundColor: colors.accent }}
+              >
+                Create Your First Course
+              </Button>
+            </Card>
+          ) : (
+            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+              {courses.map((course) => (
+                <Card key={course.id} className="flex flex-col border-2 hover:shadow-lg transition-shadow" style={{ borderColor: colors.primary }}>
+                  <div className="flex items-start gap-2 mb-3">
+                    <FontAwesomeIcon icon={faBook} style={{ color: colors.accent, fontSize: '1.25rem' }} />
+                    <h3 className="text-lg font-bold" style={{ color: colors.primary }}>{course.title}</h3>
+                  </div>
+                  <p className="text-gray-600 text-sm mb-3 flex-grow">{course.description}</p>
+                  
+                  <div className="space-y-2 text-sm mb-4 p-3 rounded" style={{ backgroundColor: colors.background }}>
+                    <p className="text-gray-700">
+                      <span className="font-semibold" style={{ color: colors.primary }}>Category:</span> {course.category}
+                    </p>
+                    <p className="text-gray-700">
+                      <span className="font-semibold" style={{ color: colors.primary }}>Level:</span>{' '}
+                      <span className="capitalize">{course.level}</span>
+                    </p>
+                    <p className="text-gray-700">
+                      <span className="font-semibold" style={{ color: colors.primary }}>Duration:</span> {course.duration_weeks} weeks
+                    </p>
+                  </div>
+
+                  <div className="flex flex-col gap-2 pt-4 border-t" style={{ borderColor: colors.primary }}>
+                    <Button
+                      variant="primary"
+                      onClick={() => {
+                        setManagingLessons(course);
+                        fetchLessons(course.id);
+                      }}
+                      className="w-full px-4 py-2 rounded-lg font-semibold text-white transition-all"
+                      style={{ backgroundColor: colors.primary }}
+                    >
+                      <FontAwesomeIcon icon={faBook} className="mr-1" />
+                      Manage Lessons
+                    </Button>
+                    <div className="flex gap-2">
+                      <Button
+                        variant="secondary"
+                        onClick={() => setEditingCourse(course)}
+                        className="flex-1 px-3 py-2 rounded-lg font-semibold text-white transition-all text-sm"
+                        style={{ backgroundColor: colors.accent }}
+                      >
+                        Edit
+                      </Button>
+                      <Button
+                        variant="danger"
+                        onClick={() => handleDeleteCourse(course.id)}
+                        className="flex-1 px-3 py-2 rounded-lg font-semibold text-white transition-all text-sm"
+                        style={{ backgroundColor: '#dc2626' }}
+                      >
+                        Delete
+                      </Button>
+                    </div>
+                  </div>
+                </Card>
+              ))}
+            </div>
+          )}
+        </>
+      )}
+
+      {/* Analytics Tab */}
+      {activeTab === 'analytics' && !selectedStudent && (
+        <EducatorProgressAnalytics 
+          students={students} 
+          onViewStudentDetails={(student) => {
+            setSelectedStudent(student);
+            setActiveTab('analytics');
+          }}
+        />
+      )}
     </div>
   );
 };
