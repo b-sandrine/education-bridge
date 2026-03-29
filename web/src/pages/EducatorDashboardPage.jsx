@@ -6,10 +6,11 @@ import { CourseForm } from '../components/CourseForm';
 import { LessonForm } from '../components/LessonForm';
 import { EducatorProgressAnalytics } from '../components/EducatorProgressAnalytics';
 import { StudentInsights } from '../components/StudentInsights';
+import StudentInterventionTools from '../components/StudentInterventionTools';
 import { contentAPI } from '../services/api';
 import { useNotification } from '../hooks/useNotification';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faChartBar, faBook, faChalkboardUser, faStar } from '@fortawesome/free-solid-svg-icons';
+import { faChartBar, faBook, faChalkboardUser, faStar, faHeartbeat } from '@fortawesome/free-solid-svg-icons';
 
 // Color scheme
 const colors = {
@@ -31,7 +32,7 @@ export const EducatorDashboardPage = () => {
   const [lessons, setLessons] = useState([]);
   const [showLessonForm, setShowLessonForm] = useState(false);
   const [editingLesson, setEditingLesson] = useState(null);
-  const [activeTab, setActiveTab] = useState('courses'); // "courses", "analytics", "student-insights"
+  const [activeTab, setActiveTab] = useState('courses'); // "courses", "analytics", "interventions"
   const [selectedStudent, setSelectedStudent] = useState(null);
   const [students, setStudents] = useState([]);
   const { showSuccess, showError } = useNotification();
@@ -307,7 +308,7 @@ export const EducatorDashboardPage = () => {
 
       {/* Navigation Tabs */}
       <div className="flex gap-2 mb-6 border-b-2 flex-wrap" style={{ borderColor: colors.primary }}>
-        {['courses', 'analytics'].map((tab) => (
+        {['courses', 'analytics', 'interventions'].map((tab) => (
           <button
             key={tab}
             onClick={() => {
@@ -321,8 +322,11 @@ export const EducatorDashboardPage = () => {
               backgroundColor: activeTab === tab ? `${colors.accent}10` : 'transparent'
             }}
           >
-            <FontAwesomeIcon icon={tab === 'courses' ? faBook : faChartBar} className="mr-2" />
-            {tab === 'courses' ? 'My Courses' : 'Class Analytics'}
+            <FontAwesomeIcon 
+              icon={tab === 'courses' ? faBook : tab === 'analytics' ? faChartBar : faHeartbeat} 
+              className="mr-2" 
+            />
+            {tab === 'courses' ? 'My Courses' : tab === 'analytics' ? 'Class Analytics' : 'Student Support'}
           </button>
         ))}
       </div>
@@ -451,6 +455,19 @@ export const EducatorDashboardPage = () => {
             setActiveTab('analytics');
           }}
         />
+      )}
+
+      {activeTab === 'interventions' && !selectedStudent && courses.length > 0 && (
+        <StudentInterventionTools 
+          courseId={courses[0]?.id}
+          educatorId={user?.id}
+        />
+      )}
+
+      {courses.length === 0 && activeTab === 'interventions' && (
+        <Card className="text-center py-12" style={{ borderColor: colors.primary, borderWidth: 2 }}>
+          <p className="text-gray-600 mb-4">Create a course first to access student support tools</p>
+        </Card>
       )}
     </div>
   );

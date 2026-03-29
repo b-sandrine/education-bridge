@@ -9,6 +9,7 @@ import { calculateProgress } from '../utils/helpers';
 import { Link } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faBook, faCheckCircle, faClock, faGraduationCap, faArrowRight, faStar } from '@fortawesome/free-solid-svg-icons';
+import StudentGamification from '../components/StudentGamification';
 
 // Color scheme
 const colors = {
@@ -111,6 +112,19 @@ export const DashboardPage = () => {
             </div>
           </Card>
         </div>
+
+        {/* Gamification Section */}
+        {userProgress.length > 0 && (
+          <div className="mb-12">
+            <h2 className="text-3xl font-bold mb-6" style={{ color: colors.primary }}>
+              🏆 Your Achievements
+            </h2>
+            <StudentGamification 
+              studentId={user?.id} 
+              courseId={userProgress[0]?.course_id}
+            />
+          </div>
+        )}
 
         {/* Your Courses Section */}
         <h2 className="text-3xl font-bold mb-6" style={{ color: colors.primary }}>

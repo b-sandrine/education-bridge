@@ -135,4 +135,50 @@ export const quizAPI = {
   getQuizResults: (quizId) => apiClient.get(`/quiz/quizzes/${quizId}/results`),
 };
 
+// Grading endpoints (Educator tools)
+export const gradingAPI = {
+  // Essay grading
+  getEssayResponses: (quizId, status) => apiClient.get(`/grading/essays/${quizId}`, { params: { status } }),
+  gradeResponse: (responseId, data) => apiClient.post(`/grading/grade/${responseId}`, data),
+  
+  // Quiz analytics
+  getQuizStatistics: (quizId) => apiClient.get(`/grading/quiz-stats/${quizId}`),
+  getQuestionAnalysis: (quizId) => apiClient.get(`/grading/question-analysis/${quizId}`),
+  
+  // Student interventions
+  flagStudentForIntervention: (data) => apiClient.post('/grading/interventions', data),
+  getAtRiskStudents: (courseId, threshold) => apiClient.get(`/grading/at-risk/${courseId}`, { params: { threshold } }),
+  
+  // Targeted assignments
+  createTargetedAssignment: (data) => apiClient.post('/grading/targeted-assignments', data),
+  
+  // Class analytics
+  getClassProgressOverview: (courseId) => apiClient.get(`/grading/class-progress/${courseId}`),
+  
+  // Feedback
+  submitStudentFeedback: (studentId, data) => apiClient.post(`/grading/feedback/${studentId}`, data),
+};
+
+// Learner analytics endpoints (Student analytics)
+export const learnerAnalyticsAPI = {
+  getWeakAreas: (courseId) => apiClient.get(`/learner-analytics/weak-areas/${courseId}`),
+  getTopicMastery: (courseId) => apiClient.get(`/learner-analytics/topic-mastery/${courseId}`),
+  getLearningPatterns: (courseId) => apiClient.get(`/learner-analytics/learning-patterns/${courseId}`),
+  getRecommendations: (courseId) => apiClient.get(`/learner-analytics/recommendations/${courseId}`),
+  getExamReadiness: (courseId) => apiClient.get(`/learner-analytics/exam-readiness/${courseId}`),
+  getAdaptiveDifficulty: (courseId) => apiClient.get(`/learner-analytics/adaptive-difficulty/${courseId}`),
+  getLearningVelocity: (courseId) => apiClient.get(`/learner-analytics/learning-velocity/${courseId}`),
+};
+
+// Gamification endpoints
+export const gamificationAPI = {
+  getStudentAchievements: (studentId) => apiClient.get('/gamification/achievements', { params: { studentId } }),
+  getStudentStreaks: (studentId) => apiClient.get('/gamification/streaks', { params: { studentId } }),
+  getLeaderboard: (courseId) => apiClient.get(`/gamification/leaderboard/${courseId}`),
+  getAchievementProgress: (badgeType) => apiClient.get(`/gamification/progress/${badgeType}`),
+  unlockBadge: (data) => apiClient.post('/gamification/awards', data),
+  resetStreaks: (studentId) => apiClient.delete(`/gamification/streaks/${studentId}`),
+  getBadgeDetails: (badgeType) => apiClient.get(`/gamification/badges/${badgeType}`),
+};
+
 export default apiClient;

@@ -16,6 +16,9 @@ import chatbotRoutes from './routes/chatbotRoutes.js';
 import queryRoutes from './routes/queryRoutes.js';
 import aiRoutes from './routes/aiRoutes.js';
 import quizRoutes from './routes/quizRoutes.js';
+import gradingRoutes from './routes/gradingRoutes.js';
+import learnerAnalyticsRoutes from './routes/learnerAnalyticsRoutes.js';
+import gamificationRoutes from './routes/gamificationRoutes.js';
 
 import swaggerUi from 'swagger-ui-express';
 import YAML from 'yaml';
@@ -79,6 +82,9 @@ app.use('/api/progress', progressRoutes);
 app.use('/api/chatbot', chatbotRoutes);
 app.use('/api/ai', aiRoutes);
 app.use('/api/quiz', quizRoutes);
+app.use('/api/grading', gradingRoutes);
+app.use('/api/learner-analytics', learnerAnalyticsRoutes);
+app.use('/api/gamification', gamificationRoutes);
 app.use('/api', queryRoutes);
 
 // Health check
