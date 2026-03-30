@@ -92,16 +92,16 @@ const Footer = () => {
               </div>
             </div>
             <div className="flex gap-4">
-              <a href="#facebook" className="p-2 rounded-full w-10 h-10 flex items-center justify-center text-white transition hover:scale-110" style={{ backgroundColor: colors.primary }}>
+              <a href="#facebook" className="p-2 rounded-full w-10 h-10 flex items-center justify-center text-black transition hover:scale-110" style={{ backgroundColor: colors.primary }}>
                 <FontAwesomeIcon icon={faFacebookBrand} size="lg" />
               </a>
-              <a href="#twitter" className="p-2 rounded-full w-10 h-10 flex items-center justify-center text-white transition hover:scale-110" style={{ backgroundColor: colors.primary }}>
+              <a href="#twitter" className="p-2 rounded-full w-10 h-10 flex items-center justify-center text-black transition hover:scale-110" style={{ backgroundColor: colors.primary }}>
                 <FontAwesomeIcon icon={faTwitterBrand} size="lg" />
               </a>
-              <a href="#linkedin" className="p-2 rounded-full w-10 h-10 flex items-center justify-center text-white transition hover:scale-110" style={{ backgroundColor: colors.primary }}>
+              <a href="#linkedin" className="p-2 rounded-full w-10 h-10 flex items-center justify-center text-black transition hover:scale-110" style={{ backgroundColor: colors.primary }}>
                 <FontAwesomeIcon icon={faLinkedinBrand} size="lg" />
               </a>
-              <a href="#instagram" className="p-2 rounded-full w-10 h-10 flex items-center justify-center text-white transition hover:scale-110" style={{ backgroundColor: colors.primary }}>
+              <a href="#instagram" className="p-2 rounded-full w-10 h-10 flex items-center justify-center text-black transition hover:scale-110" style={{ backgroundColor: colors.primary }}>
                 <FontAwesomeIcon icon={faInstagramBrand} size="lg" />
               </a>
             </div>
@@ -151,7 +151,7 @@ const PublicHomePage = () => {
             <Link to="/register">
               <Button 
                 variant="primary" 
-                className="px-8 py-4 text-lg font-bold text-white rounded-lg shadow-lg hover:shadow-xl transition transform hover:scale-105 inline-flex items-center gap-2"
+                className="px-8 py-4 text-lg font-bold text-black rounded-lg shadow-lg hover:shadow-xl transition transform hover:scale-105 inline-flex items-center gap-2"
                 style={{ backgroundColor: colors.accent }}
               >
                 <FontAwesomeIcon icon={faStar} />
@@ -181,7 +181,7 @@ const PublicHomePage = () => {
             {/* Step 1 */}
             <div className="text-center">
               <div 
-                className="w-20 h-20 rounded-full mx-auto mb-6 flex items-center justify-center text-3xl text-white shadow-lg"
+                className="w-20 h-20 rounded-full mx-auto mb-6 flex items-center justify-center text-3xl text-black shadow-lg"
                 style={{ backgroundColor: colors.accent }}
               >
                 <FontAwesomeIcon icon={faGamepad} />
@@ -195,7 +195,7 @@ const PublicHomePage = () => {
             {/* Step 2 */}
             <div className="text-center">
               <div 
-                className="w-20 h-20 rounded-full mx-auto mb-6 flex items-center justify-center text-3xl text-white shadow-lg"
+                className="w-20 h-20 rounded-full mx-auto mb-6 flex items-center justify-center text-3xl text-black shadow-lg"
                 style={{ backgroundColor: colors.accent }}
               >
                 <FontAwesomeIcon icon={faChartLine} />
@@ -209,7 +209,7 @@ const PublicHomePage = () => {
             {/* Step 3 */}
             <div className="text-center">
               <div 
-                className="w-20 h-20 rounded-full mx-auto mb-6 flex items-center justify-center text-3xl text-white shadow-lg"
+                className="w-20 h-20 rounded-full mx-auto mb-6 flex items-center justify-center text-3xl text-black shadow-lg"
                 style={{ backgroundColor: colors.accent }}
               >
                 <FontAwesomeIcon icon={faLightbulb} />
@@ -336,7 +336,7 @@ const PublicHomePage = () => {
           <Link to="/register">
             <Button 
               variant="primary" 
-              className="px-10 py-4 text-lg font-bold text-white rounded-lg shadow-lg hover:shadow-xl transition transform hover:scale-105 inline-flex items-center gap-2"
+              className="px-10 py-4 text-lg font-bold text-black rounded-lg shadow-lg hover:shadow-xl transition transform hover:scale-105 inline-flex items-center gap-2"
               style={{ backgroundColor: colors.accent }}
             >
               <FontAwesomeIcon icon={faStar} />
@@ -366,21 +366,21 @@ const LoggedInHomePage = () => {
 
         {/* Quick Stats */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
-          <Card className="text-white shadow-lg" style={{ backgroundColor: colors.primary }}>
+          <Card className="text-black shadow-lg" style={{ backgroundColor: colors.primary }}>
             <div className="text-4xl mb-4">
               <FontAwesomeIcon icon={faBook} />
             </div>
             <p className="text-sm opacity-90 mb-2">Courses Enrolled</p>
             <p className="text-3xl font-bold">5</p>
           </Card>
-          <Card className="text-white shadow-lg" style={{ backgroundColor: colors.accent }}>
+          <Card className="text-black shadow-lg" style={{ backgroundColor: colors.accent }}>
             <div className="text-4xl mb-4">
               <FontAwesomeIcon icon={faCheckCircle} />
             </div>
             <p className="text-sm opacity-90 mb-2">Completed</p>
             <p className="text-3xl font-bold">2</p>
           </Card>
-          <Card className="text-white shadow-lg" style={{ backgroundColor: colors.primary }}>
+          <Card className="text-black shadow-lg" style={{ backgroundColor: colors.primary }}>
             <div className="text-4xl mb-4">
               <FontAwesomeIcon icon={faRobot} />
             </div>
@@ -430,7 +430,7 @@ const LoggedInHomePage = () => {
               </div>
               <Button 
                 variant="primary" 
-                className="w-full text-white font-bold rounded"
+                className="w-full text-black font-bold rounded"
                 style={{ backgroundColor: colors.primary }}
               >
                 Continue

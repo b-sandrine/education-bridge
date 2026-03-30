@@ -37,8 +37,8 @@ const StudentGamification = ({ studentId, courseId }) => {
       setLoading(true);
       const [achievementsRes, streaksRes, leaderboardRes] = await Promise.all([
         api.get(`/gamification/achievements?studentId=${studentId}`),
-        api.get(`/gamification/streaks?studentId=${studentId}`),
-        api.get(`/gamification/leaderboard/${courseId}`),
+        api.get(`/gamification/streak`),
+        api.get(`/gamification/courses/${courseId}/leaderboard`),
       ]);
 
       setAchievements(achievementsRes.data.data || []);

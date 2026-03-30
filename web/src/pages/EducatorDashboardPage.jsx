@@ -406,7 +406,7 @@ export const EducatorDashboardPage = () => {
               variant="primary"
               onClick={() => setShowForm(true)}
               disabled={loading}
-              className="px-6 py-3 rounded-lg font-semibold text-white transition-all hover:shadow-lg"
+              className="px-6 py-3 rounded-lg font-semibold text-black transition-all hover:shadow-lg"
               style={{ backgroundColor: colors.accent }}
             >
               <FontAwesomeIcon icon={faBook} className="mr-2" />
@@ -425,7 +425,7 @@ export const EducatorDashboardPage = () => {
               <Button
                 variant="primary"
                 onClick={() => setShowForm(true)}
-                className="px-6 py-2 rounded-lg font-semibold text-white"
+                className="px-6 py-2 rounded-lg font-semibold text-black"
                 style={{ backgroundColor: colors.accent }}
               >
                 Create Your First Course
@@ -461,7 +461,7 @@ export const EducatorDashboardPage = () => {
                         setManagingLessons(course);
                         fetchLessons(course.id);
                       }}
-                      className="w-full px-4 py-2 rounded-lg font-semibold text-white transition-all"
+                      className="w-full px-4 py-2 rounded-lg font-semibold text-black transition-all"
                       style={{ backgroundColor: colors.primary }}
                     >
                       <FontAwesomeIcon icon={faBook} className="mr-1" />
@@ -471,7 +471,7 @@ export const EducatorDashboardPage = () => {
                       <Button
                         variant="secondary"
                         onClick={() => setEditingCourse(course)}
-                        className="flex-1 px-3 py-2 rounded-lg font-semibold text-white transition-all text-sm"
+                        className="flex-1 px-3 py-2 rounded-lg font-semibold text-black transition-all text-sm"
                         style={{ backgroundColor: colors.accent }}
                       >
                         Edit
@@ -479,7 +479,7 @@ export const EducatorDashboardPage = () => {
                       <Button
                         variant="danger"
                         onClick={() => handleDeleteCourse(course.id)}
-                        className="flex-1 px-3 py-2 rounded-lg font-semibold text-white transition-all text-sm"
+                        className="flex-1 px-3 py-2 rounded-lg font-semibold text-black transition-all text-sm"
                         style={{ backgroundColor: '#dc2626' }}
                       >
                         Delete
@@ -536,7 +536,7 @@ export const EducatorDashboardPage = () => {
                     <Button
                       variant="primary"
                       onClick={() => navigate(`/educator-dashboard/courses/${selectedCourseForQuizzes.id}/quizzes`)}
-                      className="px-6 py-3 rounded-lg font-semibold text-white transition-all hover:shadow-lg"
+                      className="px-6 py-3 rounded-lg font-semibold text-black transition-all hover:shadow-lg"
                       style={{ backgroundColor: colors.accent }}
                     >
                       <FontAwesomeIcon icon={faQuestionCircle} className="mr-2" />
@@ -551,7 +551,7 @@ export const EducatorDashboardPage = () => {
                       <Button
                         variant="primary"
                         onClick={() => navigate(`/educator-dashboard/courses/${selectedCourseForQuizzes.id}/quizzes`)}
-                        className="px-6 py-2 rounded-lg font-semibold text-white"
+                        className="px-6 py-2 rounded-lg font-semibold text-black"
                         style={{ backgroundColor: colors.accent }}
                       >
                         Create Your First Quiz

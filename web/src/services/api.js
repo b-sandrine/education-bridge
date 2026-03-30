@@ -174,8 +174,8 @@ export const learnerAnalyticsAPI = {
 // Gamification endpoints
 export const gamificationAPI = {
   getStudentAchievements: (studentId) => apiClient.get('/gamification/achievements', { params: { studentId } }),
-  getStudentStreaks: (studentId) => apiClient.get('/gamification/streaks', { params: { studentId } }),
-  getLeaderboard: (courseId) => apiClient.get(`/gamification/leaderboard/${courseId}`),
+  getStudentStreaks: (studentId) => apiClient.get('/gamification/streak'),
+  getLeaderboard: (courseId) => apiClient.get(`/gamification/courses/${courseId}/leaderboard`),
   getAchievementProgress: (badgeType) => apiClient.get(`/gamification/progress/${badgeType}`),
   unlockBadge: (data) => apiClient.post('/gamification/awards', data),
   resetStreaks: (studentId) => apiClient.delete(`/gamification/streaks/${studentId}`),
