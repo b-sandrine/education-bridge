@@ -73,7 +73,7 @@ class GamificationService {
     // Check if already awarded
     const checkQuery = `
       SELECT * FROM student_achievements 
-      WHERE student_id = $1 AND badge_id = $2
+      WHERE student_id = $1 AND badge_type = $2
     `;
     const checkResult = await pool.query(checkQuery, [studentId, badgeId]);
 
@@ -83,12 +83,12 @@ class GamificationService {
 
     const achievementId = uuidv4();
     const query = `
-      INSERT INTO student_achievements (id, student_id, badge_id, achieved_at)
-      VALUES ($1, $2, $3, CURRENT_TIMESTAMP)
+      INSERT INTO student_achievements (id, student_id, badge_type, earned_at, points_awarded)
+      VALUES ($1, $2, $3, CURRENT_TIMESTAMP, $4)
       RETURNING *
     `;
 
-    const result = await pool.query(query, [achievementId, studentId, badgeId]);
+    const result = await pool.query(query, [achievementId, studentId, badgeId, 10]);
     return result.rows[0];
   }
 
@@ -193,7 +193,7 @@ class GamificationService {
         u.last_name,
         u.email,
         COALESCE(SUM(sp.points), 0) as total_points,
-        COUNT(DISTINCT sa.badge_id) as badge_count,
+        COUNT(DISTINCT sa.id) as badge_count,
         AVG(qa.percentage_score) as avg_score,
         ROW_NUMBER() OVER (ORDER BY COALESCE(SUM(sp.points), 0) DESC) as rank
       FROM users u
@@ -219,7 +219,7 @@ class GamificationService {
       FROM student_achievements sa
       JOIN users u ON sa.student_id = u.id
       WHERE sa.student_id = $1
-      ORDER BY sa.achieved_at DESC
+      ORDER BY sa.earned_at DESC
     `;
 
     const result = await pool.query(query, [studentId]);

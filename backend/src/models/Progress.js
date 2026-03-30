@@ -5,8 +5,8 @@ class Progress {
   static async create(progressData) {
     const id = uuidv4();
     const query = `
-      INSERT INTO progress (id, user_id, course_id, lessons_completed, score, status, created_at, updated_at)
-      VALUES ($1, $2, $3, $4, $5, $6, NOW(), NOW())
+      INSERT INTO progress (id, user_id, course_id, lessons_completed, score, status, completion_date, created_at, updated_at)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, NOW(), NOW())
       RETURNING *
     `;
     const result = await pool.query(query, [
@@ -16,6 +16,7 @@ class Progress {
       progressData.lessonsCompleted || 0,
       progressData.score || 0,
       progressData.status || 'in_progress',
+      progressData.status === 'completed' ? new Date() : null,
     ]);
     return result.rows[0];
   }
@@ -63,6 +64,13 @@ class Progress {
       updates.push(`status = $${paramIndex}`);
       values.push(progressData.status);
       paramIndex++;
+      
+      // Set completion_date when status changes to 'completed'
+      if (progressData.status === 'completed') {
+        updates.push(`completion_date = $${paramIndex}`);
+        values.push(new Date());
+        paramIndex++;
+      }
     }
 
     if (updates.length === 0) return null;

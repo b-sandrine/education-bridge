@@ -19,6 +19,8 @@ import { EducatorDashboardPage } from './pages/EducatorDashboardPage';
 import { AdminDashboardPage } from './pages/AdminDashboardPage';
 import { StudentQueriesPage } from './pages/StudentQueriesPage';
 import { AITutorPage } from './pages/AITutorPage';
+import { QuizManagementPage } from './pages/QuizManagementPage';
+import { QuizTakingPage } from './pages/QuizTakingPage';
 import { authAPI } from './services/api';
 import { loginSuccess } from './store/authSlice';
 
@@ -84,9 +86,11 @@ const AppContent = () => {
               <Route path="/ai-tutor" element={<RoleProtectedRoute requiredRole="student"><AITutorPage /></RoleProtectedRoute>} />
               <Route path="/educator-dashboard" element={<RoleProtectedRoute requiredRole="educator"><EducatorDashboardPage /></RoleProtectedRoute>} />
               <Route path="/educator-dashboard/courses/:courseId/students" element={<RoleProtectedRoute requiredRole="educator"><CourseStudentsPage /></RoleProtectedRoute>} />
+              <Route path="/educator-dashboard/courses/:courseId/quizzes" element={<RoleProtectedRoute requiredRole="educator"><QuizManagementPage /></RoleProtectedRoute>} />
               <Route path="/admin-dashboard" element={<RoleProtectedRoute requiredRole="admin"><AdminDashboardPage /></RoleProtectedRoute>} />
               <Route path="/courses" element={<CoursesPage />} />
               <Route path="/courses/:id" element={<CourseDetailPage />} />
+              <Route path="/quizzes/:quizId" element={<ProtectedRoute><QuizTakingPage /></ProtectedRoute>} />
             </Routes>
           </main>
         </div>

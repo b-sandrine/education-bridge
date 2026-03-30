@@ -6,7 +6,7 @@ import {
   faClock,
   faFlag,
   faArrowLeft,
-  faSubmit,
+  faPaperPlane
 } from '@fortawesome/free-solid-svg-icons';
 import { Button, Card } from './CommonComponents';
 import { useNotification } from '../hooks/useNotification';
@@ -411,7 +411,7 @@ export const QuizTaker = ({ quiz, questions, onSubmit, onCancel, onAttemptComple
                     className="flex-1 px-4 py-2 rounded-lg text-white font-semibold disabled:opacity-50"
                     style={{ backgroundColor: colors.accent }}
                   >
-                    <FontAwesomeIcon icon={faSubmit} className="mr-2" />
+                    <FontAwesomeIcon icon={faPaperPlane} className="mr-2" />
                     {submitting ? 'Submitting...' : 'Submit'}
                   </Button>
                 ) : (

@@ -24,6 +24,17 @@ class ProgressService {
   }
 
   static async updateProgress(userId, courseId, lessonsCompleted, score) {
+    const course = await Course.findById(courseId);
+    if (!course) {
+      throw new NotFoundError('Course not found');
+    }
+
+    // Validate lessons_completed is not greater than total lessons
+    const totalLessons = course.lessons?.length || 0;
+    if (lessonsCompleted > totalLessons) {
+      throw new Error(`lessons_completed (${lessonsCompleted}) cannot exceed total lessons (${totalLessons})`);
+    }
+
     let progress = await Progress.findByUserAndCourse(userId, courseId);
     if (!progress) {
       progress = await Progress.create({
@@ -37,6 +48,13 @@ class ProgressService {
       progress = await Progress.update(progress.id, {
         lessonsCompleted,
         score,
+      });
+    }
+
+    // Auto-complete course if all lessons are completed
+    if (lessonsCompleted >= totalLessons && progress.status !== 'completed') {
+      progress = await Progress.update(progress.id, {
+        status: 'completed',
       });
     }
 
@@ -63,6 +81,40 @@ class ProgressService {
     progress = await Progress.update(progress.id, {
       status: 'completed',
     });
+
+    return progress;
+  }
+
+  // Complete a lesson and auto-complete course if all lessons done
+  static async completeLessonAndCheckCourse(userId, courseId, lessonId) {
+    const course = await Course.findById(courseId);
+    if (!course) {
+      throw new NotFoundError('Course not found');
+    }
+
+    let progress = await Progress.findByUserAndCourse(userId, courseId);
+    if (!progress) {
+      progress = await Progress.create({
+        userId,
+        courseId,
+        lessonsCompleted: 1,
+        score: 0,
+        status: 'in_progress',
+      });
+    } else if (progress.lessons_completed < (course.lessons?.length || 0)) {
+      // Only increment if we haven't reached the max
+      progress = await Progress.update(progress.id, {
+        lessonsCompleted: progress.lessons_completed + 1,
+      });
+    }
+
+    // Auto-complete course if all lessons are now completed
+    const totalLessons = course.lessons?.length || 0;
+    if (progress && progress.lessons_completed >= totalLessons && progress.status !== 'completed') {
+      progress = await Progress.update(progress.id, {
+        status: 'completed',
+      });
+    }
 
     return progress;
   }

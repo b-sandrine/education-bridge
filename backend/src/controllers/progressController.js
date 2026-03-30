@@ -52,6 +52,20 @@ export const completeCourse = asyncHandler(async (req, res) => {
   });
 });
 
+export const completeLessonAndCheckCourse = asyncHandler(async (req, res) => {
+  // User completes a lesson - auto-completes course if all lessons are done
+  const progress = await ProgressService.completeLessonAndCheckCourse(
+    req.user.id,
+    req.params.courseId,
+    req.params.lessonId
+  );
+  res.status(200).json({
+    status: 'success',
+    message: progress.status === 'completed' ? 'Course completed!' : 'Lesson completed',
+    data: progress,
+  });
+});
+
 // Educator endpoints for tracking student progress
 export const getStudentsInCourse = asyncHandler(async (req, res) => {
   // Educators can only view students in their own courses; admins can view all

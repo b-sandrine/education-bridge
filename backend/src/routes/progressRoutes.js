@@ -7,6 +7,7 @@ const router = express.Router();
 
 router.post('/courses/:courseId/start', authenticate, progressController.startCourse);
 router.put('/courses/:courseId/update', authenticate, progressController.updateProgress);
+router.post('/courses/:courseId/lessons/:lessonId/complete', authenticate, progressController.completeLessonAndCheckCourse);
 router.get('/progress', authenticate, progressController.getUserProgress);
 router.get('/courses/:courseId/progress', authenticate, progressController.getCourseProgress);
 router.post('/courses/:courseId/complete', authenticate, progressController.completeCourse);

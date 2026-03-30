@@ -58,6 +58,7 @@ export const contentAPI = {
 export const progressAPI = {
   startCourse: (courseId) => apiClient.post(`/progress/courses/${courseId}/start`),
   updateProgress: (courseId, data) => apiClient.put(`/progress/courses/${courseId}/update`, data),
+  completeLessonAndCheckCourse: (courseId, lessonId) => apiClient.post(`/progress/courses/${courseId}/lessons/${lessonId}/complete`),
   getUserProgress: () => apiClient.get('/progress/progress'),
   getCourseProgress: (courseId) => apiClient.get(`/progress/courses/${courseId}/progress`),
   completeCourse: (courseId) => apiClient.post(`/progress/courses/${courseId}/complete`),

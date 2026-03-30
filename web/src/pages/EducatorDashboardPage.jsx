@@ -1,16 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import { useSelector } from 'react-redux';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Button, Card, Alert } from '../components/CommonComponents';
 import { CourseForm } from '../components/CourseForm';
 import { LessonForm } from '../components/LessonForm';
 import { EducatorProgressAnalytics } from '../components/EducatorProgressAnalytics';
 import { StudentInsights } from '../components/StudentInsights';
 import StudentInterventionTools from '../components/StudentInterventionTools';
-import { contentAPI } from '../services/api';
+import { contentAPI, quizAPI } from '../services/api';
 import { useNotification } from '../hooks/useNotification';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faChartBar, faBook, faChalkboardUser, faStar, faHeartbeat } from '@fortawesome/free-solid-svg-icons';
+import { faChartBar, faBook, faChalkboardUser, faStar, faHeartbeat, faQuestionCircle } from '@fortawesome/free-solid-svg-icons';
 
 // Color scheme
 const colors = {
@@ -23,6 +23,8 @@ const colors = {
 export const EducatorDashboardPage = () => {
   const user = useSelector((state) => state.auth.user);
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
+  
   const [courses, setCourses] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
@@ -32,9 +34,11 @@ export const EducatorDashboardPage = () => {
   const [lessons, setLessons] = useState([]);
   const [showLessonForm, setShowLessonForm] = useState(false);
   const [editingLesson, setEditingLesson] = useState(null);
-  const [activeTab, setActiveTab] = useState('courses'); // "courses", "analytics", "interventions"
+  const [activeTab, setActiveTab] = useState(searchParams.get('tab') || 'courses'); // Read from URL
   const [selectedStudent, setSelectedStudent] = useState(null);
   const [students, setStudents] = useState([]);
+  const [quizzes, setQuizzes] = useState([]);
+  const [selectedCourseForQuizzes, setSelectedCourseForQuizzes] = useState(null);
   const { showSuccess, showError } = useNotification();
 
   useEffect(() => {
@@ -42,6 +46,12 @@ export const EducatorDashboardPage = () => {
       fetchCourses();
     }
   }, [user?.id]);
+
+  // Update active tab when URL params change
+  useEffect(() => {
+    const tabFromUrl = searchParams.get('tab') || 'courses';
+    setActiveTab(tabFromUrl);
+  }, [searchParams]);
 
   const fetchCourses = async () => {
     try {
@@ -74,14 +84,17 @@ export const EducatorDashboardPage = () => {
           
           // Add students, updating if they already exist (to get latest progress)
           courseStudents.forEach(student => {
+            const courseForStudent = courses.find(c => c.id === course.id);
+            const totalLessons = courseForStudent?.lessons?.length || 1;
             allStudents[student.id] = {
               id: student.id,
               firstName: student.first_name,
               lastName: student.last_name,
               email: student.email,
-              progress: student.lessons_completed ? Math.round((student.lessons_completed / 10) * 100) : 0,
+              progress: student.lessons_completed ? Math.round((student.lessons_completed / totalLessons) * 100) : 0,
               score: student.score || 0,
-              status: student.status || 'in_progress'
+              status: student.status || 'in_progress',
+              totalLessons: totalLessons
             };
           });
         } catch (courseError) {
@@ -105,6 +118,32 @@ export const EducatorDashboardPage = () => {
       setLessons(response.data.data || []);
     } catch (err) {
       const message = err.response?.data?.message || 'Failed to fetch lessons';
+      showError(message);
+    }
+  };
+
+  const fetchQuizzesForCourse = async (courseId) => {
+    try {
+      const response = await quizAPI.getAllQuizzes({ courseId });
+      setQuizzes(response.data.data || []);
+    } catch (err) {
+      const message = err.response?.data?.message || 'Failed to fetch quizzes';
+      showError(message);
+      setQuizzes([]);
+    }
+  };
+
+  const handleDeleteQuiz = async (quizId) => {
+    if (!window.confirm('Are you sure you want to delete this quiz?')) return;
+
+    try {
+      await quizAPI.deleteQuiz(quizId);
+      showSuccess('Quiz deleted successfully!');
+      if (selectedCourseForQuizzes) {
+        fetchQuizzesForCourse(selectedCourseForQuizzes.id);
+      }
+    } catch (err) {
+      const message = err.response?.data?.message || 'Failed to delete quiz';
       showError(message);
     }
   };
@@ -308,12 +347,16 @@ export const EducatorDashboardPage = () => {
 
       {/* Navigation Tabs */}
       <div className="flex gap-2 mb-6 border-b-2 flex-wrap" style={{ borderColor: colors.primary }}>
-        {['courses', 'analytics', 'interventions'].map((tab) => (
+        {['courses', 'quizzes', 'analytics', 'interventions'].map((tab) => (
           <button
             key={tab}
             onClick={() => {
-              setActiveTab(tab);
+              setSearchParams({ tab });
               setSelectedStudent(null);
+              if (tab === 'quizzes' && courses.length > 0) {
+                setSelectedCourseForQuizzes(courses[0]);
+                fetchQuizzesForCourse(courses[0].id);
+              }
             }}
             className="px-6 py-3 font-semibold transition-all border-b-2 uppercase text-sm"
             style={{
@@ -323,10 +366,14 @@ export const EducatorDashboardPage = () => {
             }}
           >
             <FontAwesomeIcon 
-              icon={tab === 'courses' ? faBook : tab === 'analytics' ? faChartBar : faHeartbeat} 
+              icon={
+                tab === 'courses' ? faBook : 
+                tab === 'quizzes' ? faQuestionCircle :
+                tab === 'analytics' ? faChartBar : faHeartbeat
+              } 
               className="mr-2" 
             />
-            {tab === 'courses' ? 'My Courses' : tab === 'analytics' ? 'Class Analytics' : 'Student Support'}
+            {tab === 'courses' ? 'My Courses' : tab === 'quizzes' ? 'Quizzes' : tab === 'analytics' ? 'Class Analytics' : 'Student Support'}
           </button>
         ))}
       </div>
@@ -442,6 +489,127 @@ export const EducatorDashboardPage = () => {
                 </Card>
               ))}
             </div>
+          )}
+        </>
+      )}
+
+      {/* Quizzes Tab */}
+      {activeTab === 'quizzes' && !selectedStudent && (
+        <>
+          {courses.length === 0 ? (
+            <Card className="text-center py-12" style={{ borderColor: colors.primary, borderWidth: 2 }}>
+              <FontAwesomeIcon icon={faQuestionCircle} className="text-5xl mb-4" style={{ color: colors.accent, opacity: 0.5 }} />
+              <p className="text-gray-600 mb-4">Create a course first to manage quizzes</p>
+            </Card>
+          ) : (
+            <>
+              <div className="mb-6 flex gap-2 flex-wrap">
+                {courses.map((course) => (
+                  <Button
+                    key={course.id}
+                    variant={selectedCourseForQuizzes?.id === course.id ? 'primary' : 'secondary'}
+                    onClick={() => {
+                      setSelectedCourseForQuizzes(course);
+                      fetchQuizzesForCourse(course.id);
+                    }}
+                    className="px-4 py-2 rounded-lg font-semibold transition-all"
+                    style={selectedCourseForQuizzes?.id === course.id ? { backgroundColor: colors.accent, color: 'white' } : { borderColor: colors.primary }}
+                  >
+                    <FontAwesomeIcon icon={faBook} className="mr-2" />
+                    {course.title}
+                  </Button>
+                ))}
+              </div>
+
+              {selectedCourseForQuizzes && (
+                <>
+                  <div className="mb-6 flex justify-between items-center flex-wrap gap-4">
+                    <Card className="border-2" style={{ borderColor: colors.primary, backgroundColor: `${colors.primary}10` }}>
+                      <div className="flex items-center gap-4">
+                        <FontAwesomeIcon icon={faQuestionCircle} className="text-4xl" style={{ color: colors.accent }} />
+                        <div>
+                          <p className="text-sm text-gray-600">Total Quizzes</p>
+                          <p className="text-4xl font-bold" style={{ color: colors.primary }}>{quizzes.length}</p>
+                        </div>
+                      </div>
+                    </Card>
+                    <Button
+                      variant="primary"
+                      onClick={() => navigate(`/educator-dashboard/courses/${selectedCourseForQuizzes.id}/quizzes`)}
+                      className="px-6 py-3 rounded-lg font-semibold text-white transition-all hover:shadow-lg"
+                      style={{ backgroundColor: colors.accent }}
+                    >
+                      <FontAwesomeIcon icon={faQuestionCircle} className="mr-2" />
+                      Manage Quizzes
+                    </Button>
+                  </div>
+
+                  {quizzes.length === 0 ? (
+                    <Card className="text-center py-12 border-2" style={{ borderColor: colors.primary }}>
+                      <FontAwesomeIcon icon={faQuestionCircle} className="text-5xl mb-4" style={{ color: colors.accent, opacity: 0.5 }} />
+                      <p className="text-gray-600 mb-4">No quizzes created yet for {selectedCourseForQuizzes.title}</p>
+                      <Button
+                        variant="primary"
+                        onClick={() => navigate(`/educator-dashboard/courses/${selectedCourseForQuizzes.id}/quizzes`)}
+                        className="px-6 py-2 rounded-lg font-semibold text-white"
+                        style={{ backgroundColor: colors.accent }}
+                      >
+                        Create Your First Quiz
+                      </Button>
+                    </Card>
+                  ) : (
+                    <div className="grid gap-6">
+                      {quizzes.map((quiz) => (
+                        <Card key={quiz.id} className="flex flex-col border-2 hover:shadow-lg transition-shadow" style={{ borderColor: colors.primary }}>
+                          <div className="flex justify-between items-start mb-4">
+                            <div className="flex-grow">
+                              <h3 className="text-xl font-bold" style={{ color: colors.primary }}>{quiz.title}</h3>
+                              <p className="text-gray-600 text-sm mt-1">{quiz.description}</p>
+                            </div>
+                            <div className="flex gap-2">
+                              <Button
+                                variant="secondary"
+                                onClick={() => navigate(`/educator-dashboard/courses/${selectedCourseForQuizzes.id}/quizzes`)}
+                                className="text-sm"
+                              >
+                                <FontAwesomeIcon icon={faBook} className="mr-1" />
+                                Edit
+                              </Button>
+                              <Button
+                                variant="danger"
+                                onClick={() => handleDeleteQuiz(quiz.id)}
+                                className="text-sm"
+                              >
+                                Delete
+                              </Button>
+                            </div>
+                          </div>
+
+                          <div className="grid grid-cols-4 gap-4 p-4 rounded-lg" style={{ backgroundColor: colors.background }}>
+                            <div>
+                              <span className="text-gray-600 text-xs font-semibold">Questions</span>
+                              <p className="text-2xl font-bold" style={{ color: colors.primary }}>{quiz.questions?.length || 0}</p>
+                            </div>
+                            <div>
+                              <span className="text-gray-600 text-xs font-semibold">Passing Score</span>
+                              <p className="text-2xl font-bold" style={{ color: colors.accent }}>{quiz.passing_score}%</p>
+                            </div>
+                            <div>
+                              <span className="text-gray-600 text-xs font-semibold">Time Limit</span>
+                              <p className="text-2xl font-bold" style={{ color: colors.primary }}>{quiz.time_limit_minutes ? `${quiz.time_limit_minutes} min` : 'None'}</p>
+                            </div>
+                            <div>
+                              <span className="text-gray-600 text-xs font-semibold">Attempts</span>
+                              <p className="text-2xl font-bold" style={{ color: colors.accent }}>0</p>
+                            </div>
+                          </div>
+                        </Card>
+                      ))}
+                    </div>
+                  )}
+                </>
+              )}
+            </>
           )}
         </>
       )}

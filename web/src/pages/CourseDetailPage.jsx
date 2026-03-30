@@ -1,12 +1,12 @@
 import React, { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
-import { contentAPI, progressAPI } from '../services/api';
+import { useParams, useNavigate } from 'react-router-dom';
+import { contentAPI, progressAPI, quizAPI } from '../services/api';
 import { useAuth } from '../hooks/useAppStore';
 import { useNotification } from '../hooks/useNotification';
 import { Card, Button } from '../components/CommonComponents';
 import { ChatbotInterface } from '../components/ChatbotInterface';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faBook, faCheckCircle, faLock } from '@fortawesome/free-solid-svg-icons';
+import { faBook, faCheckCircle, faLock, faQuestionCircle } from '@fortawesome/free-solid-svg-icons';
 
 // Color scheme
 const colors = {
@@ -18,14 +18,17 @@ const colors = {
 
 export const CourseDetailPage = () => {
   const { id } = useParams();
+  const navigate = useNavigate();
   const { token } = useAuth();
   const { showSuccess, showError } = useNotification();
   
   const [course, setCourse] = useState(null);
   const [lessons, setLessons] = useState([]);
+  const [quizzes, setQuizzes] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedLesson, setSelectedLesson] = useState(null);
   const [progress, setProgress] = useState(null);
+  const [activeTab, setActiveTab] = useState('lessons'); // 'lessons' or 'quizzes'
 
   useEffect(() => {
     const fetchCourseDetails = async () => {
@@ -34,6 +37,15 @@ export const CourseDetailPage = () => {
         const courseResponse = await contentAPI.getCourse(id);
         setCourse(courseResponse.data.data);
         setLessons(courseResponse.data.data.lessons || []);
+
+        // Fetch quizzes for the course
+        try {
+          const quizzesResponse = await quizAPI.getAllQuizzes({ courseId: id });
+          setQuizzes(quizzesResponse.data.data || []);
+        } catch (err) {
+          console.warn('Failed to fetch quizzes:', err);
+          setQuizzes([]);
+        }
 
         if (token) {
           try {
@@ -142,28 +154,106 @@ export const CourseDetailPage = () => {
 
         <div className="md:col-span-2 space-y-6">
           <Card className="border-2" style={{ borderColor: colors.primary }}>
-            <h3 className="text-xl font-bold mb-4" style={{ color: colors.primary }}>Lessons</h3>
-            <div className="space-y-2">
-              {lessons.map((lesson) => (
-                <button
-                  key={lesson.id}
-                  onClick={() => setSelectedLesson(lesson)}
-                  className={`w-full text-left p-3 rounded-lg transition-all font-semibold border-2 ${
-                    selectedLesson?.id === lesson.id
-                      ? 'text-white shadow-lg'
-                      : 'hover:shadow-md'
-                  }`}
-                  style={{
-                    backgroundColor: selectedLesson?.id === lesson.id ? colors.primary : colors.background,
-                    borderColor: selectedLesson?.id === lesson.id ? colors.accent : colors.primary,
-                    color: selectedLesson?.id === lesson.id ? 'white' : colors.text
-                  }}
-                >
-                  <FontAwesomeIcon icon={faBook} className="mr-2" />
-                  Lesson {lesson.lesson_order}: {lesson.title}
-                </button>
-              ))}
+            {/* Tabs */}
+            <div className="flex gap-2 mb-4 border-b-2 flex-wrap" style={{ borderColor: colors.primary }}>
+              <button
+                onClick={() => setActiveTab('lessons')}
+                className="px-4 py-2 font-semibold transition-all border-b-2 uppercase text-sm"
+                style={{
+                  borderBottomColor: activeTab === 'lessons' ? colors.accent : 'transparent',
+                  color: activeTab === 'lessons' ? colors.accent : colors.text,
+                  backgroundColor: activeTab === 'lessons' ? `${colors.accent}10` : 'transparent'
+                }}
+              >
+                <FontAwesomeIcon icon={faBook} className="mr-2" />
+                Lessons ({lessons.length})
+              </button>
+              <button
+                onClick={() => setActiveTab('quizzes')}
+                className="px-4 py-2 font-semibold transition-all border-b-2 uppercase text-sm"
+                style={{
+                  borderBottomColor: activeTab === 'quizzes' ? colors.accent : 'transparent',
+                  color: activeTab === 'quizzes' ? colors.accent : colors.text,
+                  backgroundColor: activeTab === 'quizzes' ? `${colors.accent}10` : 'transparent'
+                }}
+              >
+                <FontAwesomeIcon icon={faQuestionCircle} className="mr-2" />
+                Quizzes ({quizzes.length})
+              </button>
             </div>
+
+            {/* Lessons Tab */}
+            {activeTab === 'lessons' && (
+              <div className="space-y-2">
+                {lessons.length === 0 ? (
+                  <p className="text-gray-600 text-center py-4">No lessons available</p>
+                ) : (
+                  lessons.map((lesson) => (
+                    <button
+                      key={lesson.id}
+                      onClick={() => setSelectedLesson(lesson)}
+                      className={`w-full text-left p-3 rounded-lg transition-all font-semibold border-2 ${
+                        selectedLesson?.id === lesson.id
+                          ? 'text-white shadow-lg'
+                          : 'hover:shadow-md'
+                      }`}
+                      style={{
+                        backgroundColor: selectedLesson?.id === lesson.id ? colors.primary : colors.background,
+                        borderColor: selectedLesson?.id === lesson.id ? colors.accent : colors.primary,
+                        color: selectedLesson?.id === lesson.id ? 'white' : colors.text
+                      }}
+                    >
+                      <FontAwesomeIcon icon={faBook} className="mr-2" />
+                      Lesson {lesson.lesson_order}: {lesson.title}
+                    </button>
+                  ))
+                )}
+              </div>
+            )}
+
+            {/* Quizzes Tab */}
+            {activeTab === 'quizzes' && (
+              <div className="space-y-2">
+                {quizzes.length === 0 ? (
+                  <p className="text-gray-600 text-center py-4">No quizzes available for this course</p>
+                ) : (
+                  quizzes.map((quiz) => (
+                    <div
+                      key={quiz.id}
+                      className="p-3 rounded-lg border-2 transition-all hover:shadow-md"
+                      style={{
+                        borderColor: colors.primary,
+                        backgroundColor: colors.background
+                      }}
+                    >
+                      <div className="flex justify-between items-start gap-3">
+                        <div className="flex-grow">
+                          <h4 className="font-semibold" style={{ color: colors.primary }}>
+                            <FontAwesomeIcon icon={faQuestionCircle} className="mr-2" />
+                            {quiz.title}
+                          </h4>
+                          <p className="text-xs text-gray-600 mt-1">{quiz.description}</p>
+                          <div className="flex gap-4 mt-2 text-xs text-gray-600">
+                            <span>Q: {quiz.questions?.length || 0}</span>
+                            <span>Pass: {quiz.passing_score}%</span>
+                            {quiz.time_limit_minutes && <span>Time: {quiz.time_limit_minutes}m</span>}
+                          </div>
+                        </div>
+                        <Button
+                          variant="primary"
+                          onClick={() => navigate(`/quizzes/${quiz.id}`)}
+                          className="text-sm px-3 py-2 rounded-lg font-semibold text-white whitespace-nowrap transition-all hover:shadow-lg"
+                          style={{ backgroundColor: colors.accent }}
+                        >
+                          <FontAwesomeIcon icon={faQuestionCircle} className="mr-1" />
+                          Take Quiz
+                        </Button>
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
+            )}
           </Card>
 
           {token && <ChatbotInterface courseId={id} courseTitle={course?.title} courseDescription={course?.description} />}

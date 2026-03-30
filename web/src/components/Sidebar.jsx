@@ -14,7 +14,11 @@ import {
   faSignOutAlt,
   faLock,
   faEnvelope,
-  faRobot
+  faRobot,
+  faQuestionCircle,
+  faHeartbeat,
+  faChevronDown,
+  faChevronUp
 } from '@fortawesome/free-solid-svg-icons';
 
 export const Sidebar = () => {
@@ -23,6 +27,7 @@ export const Sidebar = () => {
   const location = useLocation();
   const [isMobileOpen, setIsMobileOpen] = useState(false);
   const [isDesktopOpen, setIsDesktopOpen] = useState(true);
+  const [expandedSubmenu, setExpandedSubmenu] = useState('educator'); // Track which submenu is expanded
 
   const handleLogout = () => {
     dispatch(logout());
@@ -156,12 +161,52 @@ export const Sidebar = () => {
                   <p className={`text-xs font-semibold text-gray-500 uppercase tracking-wider ${!isDesktopOpen ? 'text-center' : ''}`}>
                     {isDesktopOpen ? 'Educator' : ''}
                   </p>
-                  <Link to="/educator-dashboard" className={getLinkClass('/educator-dashboard')}>
-                    <span className="flex items-center gap-2">
+                  
+                  {/* Educator Dashboard with submenu */}
+                  <div className="space-y-1">
+                    <button
+                      onClick={() => setExpandedSubmenu(expandedSubmenu === 'educator' ? null : 'educator')}
+                      className="flex items-center gap-2 w-full px-4 py-2 rounded transition-colors text-left text-gray-700 hover:bg-gray-100"
+                    >
                       <FontAwesomeIcon icon={faGraduationCap} className="w-5" />
-                      {isDesktopOpen && <span>My Courses</span>}
-                    </span>
-                  </Link>
+                      {isDesktopOpen && (
+                        <>
+                          <span className="flex-1">Dashboard</span>
+                          <FontAwesomeIcon icon={expandedSubmenu === 'educator' ? faChevronUp : faChevronDown} className="w-4" />
+                        </>
+                      )}
+                    </button>
+
+                    {/* Submenu - Only show when expanded and screen space allows */}
+                    {expandedSubmenu === 'educator' && isDesktopOpen && (
+                      <div className="ml-4 space-y-1 border-l-2 border-gray-300 pl-2">
+                        <Link to="/educator-dashboard" className={getLinkClass('/educator-dashboard')}>
+                          <span className="flex items-center gap-2">
+                            <FontAwesomeIcon icon={faBook} className="w-4 text-xs" />
+                            <span className="text-sm">My Courses</span>
+                          </span>
+                        </Link>
+                        <Link to="/educator-dashboard?tab=quizzes" className={getLinkClass('/educator-dashboard')}>
+                          <span className="flex items-center gap-2">
+                            <FontAwesomeIcon icon={faQuestionCircle} className="w-4 text-xs" />
+                            <span className="text-sm">Quizzes</span>
+                          </span>
+                        </Link>
+                        <Link to="/educator-dashboard?tab=analytics" className={getLinkClass('/educator-dashboard')}>
+                          <span className="flex items-center gap-2">
+                            <FontAwesomeIcon icon={faChartBar} className="w-4 text-xs" />
+                            <span className="text-sm">Analytics</span>
+                          </span>
+                        </Link>
+                        <Link to="/educator-dashboard?tab=interventions" className={getLinkClass('/educator-dashboard')}>
+                          <span className="flex items-center gap-2">
+                            <FontAwesomeIcon icon={faHeartbeat} className="w-4 text-xs" />
+                            <span className="text-sm">Student Support</span>
+                          </span>
+                        </Link>
+                      </div>
+                    )}
+                  </div>
                 </>
               )}
 

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useAuth, useProgress } from '../hooks/useAppStore';
-import { progressAPI, contentAPI } from '../services/api';
+import { progressAPI, contentAPI, quizAPI } from '../services/api';
 import { useDispatch } from 'react-redux';
 import { useNotification } from '../hooks/useNotification';
 import { fetchProgressSuccess } from '../store/progressSlice';
@@ -8,7 +8,7 @@ import { Card } from '../components/CommonComponents';
 import { calculateProgress } from '../utils/helpers';
 import { Link } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faBook, faCheckCircle, faClock, faGraduationCap, faArrowRight, faStar } from '@fortawesome/free-solid-svg-icons';
+import { faBook, faCheckCircle, faClock, faGraduationCap, faArrowRight, faStar, faQuestionCircle } from '@fortawesome/free-solid-svg-icons';
 import StudentGamification from '../components/StudentGamification';
 
 // Color scheme
@@ -26,6 +26,7 @@ export const DashboardPage = () => {
   const { showError } = useNotification();
   const [loading, setLoading] = useState(true);
   const [coursesData, setCoursesData] = useState({});
+  const [quizzesData, setQuizzesData] = useState({});
 
   useEffect(() => {
     const fetchData = async () => {
@@ -45,6 +46,19 @@ export const DashboardPage = () => {
         courses.forEach(course => {
           courseMap[course.id] = course;
         });
+
+        // Fetch quizzes for each course
+        const quizzesMap = {};
+        for (const course of courses) {
+          try {
+            const quizzesResponse = await quizAPI.getAllQuizzes({ courseId: course.id });
+            quizzesMap[course.id] = (quizzesResponse.data.data || []).length;
+          } catch (err) {
+            console.warn(`Failed to fetch quizzes for course ${course.id}:`, err);
+            quizzesMap[course.id] = 0;
+          }
+        }
+        setQuizzesData(quizzesMap);
         setCoursesData(courseMap);
       } catch (error) {
         console.error('Failed to load data:', error);
@@ -153,16 +167,32 @@ export const DashboardPage = () => {
                 <Link key={progress.id} to={`/courses/${progress.course_id}`}>
                   <Card className="border-2 h-full flex flex-col hover:shadow-lg transition-all cursor-pointer" style={{ borderColor: colors.primary }}>
                     {/* Course Header */}
-                    <div className="flex items-start justify-between mb-3">
-                      <div className="flex-1">
-                        <h3 className="text-lg font-bold mb-1" style={{ color: colors.primary }}>
-                          {course?.title || 'Course'}
-                        </h3>
-                        <p className="text-sm text-gray-600 line-clamp-2">
-                          {course?.description || 'Learning in progress'}
-                        </p>
+                    <div cla className="flex justify-between">
+                          <div>
+                            <span className="text-gray-600">Category:</span>
+                            <span className="ml-2 font-semibold" style={{ color: colors.primary }}>{course.category}</span>
+                          </div>
+                          <div>
+                            <span className="text-gray-600">Quizzes:</span>
+                            <span className="ml-2 font-semibold" style={{ color: colors.accent }}>
+                              <FontAwesomeIcon icon={faQuestionCircle} className="mr-1" />
+                              {quizzesData[progress.course_id] || 0}
+                            </span>
+                          </div>
+                        </div>
+                        <div className="flex justify-between">
+                          <div>
+                            <span className="text-gray-600">Level:</span>
+                            <span className="ml-2 font-semibold capitalize" style={{ color: colors.accent }}>{course.level}</span>
+                          </div>
+                          <div>
+                            <span className="text-gray-600">Lessons:</span>
+                            <span className="ml-2 font-semibold" style={{ color: colors.primary }}>
+                              <FontAwesomeIcon icon={faBook} className="mr-1" />
+                              {course.lessons?.length || 0}
+                            </span>
+                          </div>
                       </div>
-                    </div>
 
                     {/* Course Metadata */}
                     {course && (
@@ -204,17 +234,17 @@ export const DashboardPage = () => {
                     <div className="flex-1 mt-auto">
                       <div className="flex justify-between items-center mb-2">
                         <p className="text-sm font-semibold" style={{ color: colors.text }}>
-                          {progress.lessons_completed} lessons completed
+                          {progress.lessons_completed} of {course?.lessons?.length || 0} lessons completed
                         </p>
                         <p className="text-sm font-bold" style={{ color: colors.accent }}>
-                          {calculateProgress(progress.lessons_completed, 10)}%
+                          {course?.lessons?.length ? Math.round((progress.lessons_completed / course.lessons.length) * 100) : 0}%
                         </p>
                       </div>
                       <div className="w-full bg-gray-200 rounded-full h-2.5">
                         <div
                           className="h-2.5 rounded-full transition-all"
                           style={{
-                            width: `${calculateProgress(progress.lessons_completed, 10)}%`,
+                            width: `${course?.lessons?.length ? Math.round((progress.lessons_completed / course.lessons.length) * 100) : 0}%`,
                             backgroundColor: colors.accent
                           }}
                         ></div>
