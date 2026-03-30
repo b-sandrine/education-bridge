@@ -75,6 +75,10 @@ class AuthService {
       lastName: profileData.lastName,
     });
 
+    if (!updatedUser) {
+      throw new NotFoundError('Failed to update user profile');
+    }
+
     return {
       id: updatedUser.id,
       email: updatedUser.email,

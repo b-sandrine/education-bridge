@@ -50,23 +50,31 @@ class User {
     const values = [id];
     let paramIndex = 2;
 
-    if (userData.firstName) {
+    // Update firstName if provided (including empty string)
+    if ('firstName' in userData && userData.firstName !== undefined) {
       updates.push(`first_name = $${paramIndex}`);
       values.push(userData.firstName);
       paramIndex++;
     }
-    if (userData.lastName) {
+    // Update lastName if provided (including empty string)
+    if ('lastName' in userData && userData.lastName !== undefined) {
       updates.push(`last_name = $${paramIndex}`);
       values.push(userData.lastName);
       paramIndex++;
     }
-    if (userData.role) {
+    // Update role if provided
+    if ('role' in userData && userData.role !== undefined) {
       updates.push(`role = $${paramIndex}`);
       values.push(userData.role);
       paramIndex++;
     }
 
-    if (updates.length === 0) return null;
+    if (updates.length === 0) {
+      // No updates to make, return current user
+      const query = 'SELECT * FROM users WHERE id = $1';
+      const result = await pool.query(query, [id]);
+      return result.rows[0];
+    }
 
     updates.push(`updated_at = NOW()`);
     const query = `UPDATE users SET ${updates.join(', ')} WHERE id = $1 RETURNING *`;

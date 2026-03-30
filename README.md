@@ -11,6 +11,9 @@ EduBridge is a multi-platform educational system designed to address financial b
 - **USSD Interface** - SMS-based access for basic phone users
 - **AI-Powered Learning Assistant** - Curriculum-aligned question-answering support
 
+## Video Submission
+Video link: https://www.loom.com/share/22d32ec9e1ba436a92bc076a34343741
+
 ## Project Structure
 
 ```
