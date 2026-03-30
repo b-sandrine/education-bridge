@@ -184,21 +184,21 @@ export const getAtRiskStudents = asyncHandler(async (req, res) => {
 
   const atRiskQuery = `
     SELECT 
-      s.id,
-      s.full_name,
-      s.email,
+      u.id,
+      u.first_name || ' ' || u.last_name as full_name,
+      u.email,
       COUNT(DISTINCT qa.quiz_id) as quizzes_taken,
-      ROUND(AVG(qa.score)::numeric, 2) as average_score,
-      STRING_AGG(DISTINCT qq.topic, ', ') as weak_topics,
-      COUNT(CASE WHEN qa.score < $1 THEN 1 END) as failed_attempts
-    FROM students s
-    JOIN enrollments e ON s.id = e.student_id
-    LEFT JOIN quiz_attempts qa ON s.id = qa.student_id AND e.course_id = qa.course_id
+      ROUND(AVG(COALESCE(qa.percentage_score, 0))::numeric, 2) as average_score,
+      STRING_AGG(DISTINCT COALESCE(qq.topic, 'General'), ', ') as weak_topics,
+      COUNT(CASE WHEN COALESCE(qa.percentage_score, 0) < $1 THEN 1 END) as failed_attempts
+    FROM users u
+    LEFT JOIN progress p ON u.id = p.user_id AND p.course_id = $2
+    LEFT JOIN quiz_attempts qa ON u.id = qa.student_id AND qa.course_id = $2
     LEFT JOIN quiz_questions qq ON qa.quiz_id = qq.quiz_id
-    WHERE e.course_id = $2
-    GROUP BY s.id, s.full_name, s.email
-    HAVING AVG(qa.score) < $1 OR COUNT(CASE WHEN qa.score < $1 THEN 1 END) > 0
-    ORDER BY AVG(qa.score) ASC
+    WHERE u.role = 'student' AND p.course_id = $2
+    GROUP BY u.id, u.first_name, u.last_name, u.email
+    HAVING ROUND(AVG(COALESCE(qa.percentage_score, 0))::numeric, 2) < $1 OR COUNT(CASE WHEN COALESCE(qa.percentage_score, 0) < $1 THEN 1 END) > 0
+    ORDER BY ROUND(AVG(COALESCE(qa.percentage_score, 0))::numeric, 2) ASC
   `;
 
   const result = await pool.query(atRiskQuery, [threshold, courseId]);

@@ -8,7 +8,7 @@ class QuizService {
   // ===== QUIZ CRUD =====
   
   static async createQuiz(quizData, userId, userRole) {
-    const { lessonId, title, description, passingScore, timeLimitMinutes, shuffleQuestions, questionCount } = quizData;
+    const { lessonId, title, description, passingScore, timeLimitMinutes, shuffleQuestions, questions = [] } = quizData;
 
     // Verify lesson exists and user has permission
     const lesson = await Lesson.findById(lessonId);
@@ -40,9 +40,33 @@ class QuizService {
       passingScore || 70,
       timeLimitMinutes || null,
       shuffleQuestions || false,
-      questionCount || 0,
+      questions.length,
       userId,
     ]);
+
+    // Save each question
+    if (Array.isArray(questions) && questions.length > 0) {
+      for (let order = 0; order < questions.length; order++) {
+        const q = questions[order];
+        const questionId = uuidv4();
+        const questionQuery = `
+          INSERT INTO quiz_questions (id, quiz_id, question_text, question_type, options, correct_answer, points, question_order)
+          VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+          RETURNING *
+        `;
+        
+        await pool.query(questionQuery, [
+          questionId,
+          quizId,
+          q.questionText || q.question_text,
+          q.questionType || q.question_type || 'multiple_choice',
+          q.options ? JSON.stringify(q.options) : null,
+          q.correctAnswer || q.correct_answer,
+          q.points || 1,
+          order + 1,
+        ]);
+      }
+    }
 
     return result.rows[0];
   }
@@ -58,7 +82,25 @@ class QuizService {
     if (result.rows.length === 0) {
       throw new NotFoundError('Quiz not found');
     }
-    return result.rows[0];
+
+    const quiz = result.rows[0];
+
+    // Fetch associated questions
+    const questionsQuery = `
+      SELECT * FROM quiz_questions
+      WHERE quiz_id = $1
+      ORDER BY question_order ASC
+    `;
+    const questionsResult = await pool.query(questionsQuery, [quizId]);
+    quiz.questions = questionsResult.rows.map(q => ({
+      ...q,
+      options: q.options ? JSON.parse(q.options) : null,
+      question_text: q.question_text,
+      question_type: q.question_type,
+      correct_answer: q.correct_answer,
+    }));
+
+    return quiz;
   }
 
   static async getLessonQuiz(lessonId) {
@@ -122,7 +164,7 @@ class QuizService {
       throw new ForbiddenError('You can only update your own quizzes');
     }
 
-    const { title, description, passingScore, timeLimitMinutes, shuffleQuestions } = quizData;
+    const { title, description, passingScore, timeLimitMinutes, shuffleQuestions, questions } = quizData;
     
     const query = `
       UPDATE quizzes
@@ -145,6 +187,40 @@ class QuizService {
       shuffleQuestions,
       quizId,
     ]);
+
+    // If questions are provided, update them
+    if (Array.isArray(questions) && questions.length > 0) {
+      // Delete existing questions
+      await pool.query('DELETE FROM quiz_questions WHERE quiz_id = $1', [quizId]);
+
+      // Create new questions
+      for (let order = 0; order < questions.length; order++) {
+        const q = questions[order];
+        const questionId = q.id || uuidv4();
+        const questionQuery = `
+          INSERT INTO quiz_questions (id, quiz_id, question_text, question_type, options, correct_answer, points, question_order)
+          VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+          RETURNING *
+        `;
+        
+        await pool.query(questionQuery, [
+          questionId,
+          quizId,
+          q.questionText || q.question_text,
+          q.questionType || q.question_type || 'multiple_choice',
+          q.options ? JSON.stringify(q.options) : null,
+          q.correctAnswer || q.correct_answer,
+          q.points || 1,
+          order + 1,
+        ]);
+      }
+
+      // Update question count
+      await pool.query(
+        'UPDATE quizzes SET question_count = $1 WHERE id = $2',
+        [questions.length, quizId]
+      );
+    }
 
     return result.rows[0];
   }

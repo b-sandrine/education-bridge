@@ -170,24 +170,20 @@ CREATE INDEX idx_enrollments_status ON enrollments(enrollment_status);
 
 CREATE TABLE progress (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    student_id UUID NOT NULL REFERENCES students(id) ON DELETE CASCADE,
-    lesson_id UUID NOT NULL REFERENCES lessons(id) ON DELETE CASCADE,
-    enrollment_id UUID NOT NULL REFERENCES enrollments(id) ON DELETE CASCADE,
-    completion_percentage INT DEFAULT 0,
-    time_spent_seconds INT DEFAULT 0,
-    quiz_score DECIMAL(5, 2),
-    quiz_attempts INT DEFAULT 0,
-    is_completed BOOLEAN DEFAULT false,
+    user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    course_id UUID NOT NULL REFERENCES courses(id) ON DELETE CASCADE,
+    lessons_completed INT DEFAULT 0,
+    score DECIMAL(5, 2) DEFAULT 0,
+    status VARCHAR(50) NOT NULL DEFAULT 'in_progress' CHECK (status IN ('in_progress', 'completed', 'paused')),
     completion_date TIMESTAMP,
-    notes TEXT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    UNIQUE(student_id, lesson_id)
+    UNIQUE(user_id, course_id)
 );
 
-CREATE INDEX idx_progress_student_id ON progress(student_id);
-CREATE INDEX idx_progress_lesson_id ON progress(lesson_id);
-CREATE INDEX idx_progress_enrollment_id ON progress(enrollment_id);
+CREATE INDEX idx_progress_student_id ON progress(user_id);
+CREATE INDEX idx_progress_course_id ON progress(course_id);
+CREATE INDEX idx_progress_user_course ON progress(user_id, course_id);
 
 -- ============================================================================
 -- QUIZZES & ASSESSMENTS
@@ -203,6 +199,7 @@ CREATE TABLE quizzes (
     time_limit_minutes INT,
     show_correct_answers BOOLEAN DEFAULT true,
     shuffle_questions BOOLEAN DEFAULT true,
+    created_by UUID,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );

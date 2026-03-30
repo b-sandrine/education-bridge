@@ -29,6 +29,7 @@ import {
   faLinkedin as faLinkedinBrand,
   faInstagram as faInstagramBrand
 } from '@fortawesome/free-brands-svg-icons';
+import { authAPI, contentAPI, progressAPI } from '../services/api';
 
 // Color System
 const colors = {
@@ -352,95 +353,353 @@ const PublicHomePage = () => {
   );
 };
 
-// Dashboard Home Page (After Login)
+// Dashboard Home Page (After Login) - Role-Based
 const LoggedInHomePage = () => {
   const { user } = useAuth();
+  const [enrollments, setEnrollments] = React.useState([]);
+  const [userProgress, setUserProgress] = React.useState([]);
+  const [loading, setLoading] = React.useState(true);
+  const [educators, setEducators] = React.useState([]);
+  const [adminStats, setAdminStats] = React.useState({});
 
-  return (
-    <div className="min-h-screen py-12 px-6 w-full ml-0" style={{ backgroundColor: colors.background }}>
-      <div className="max-w-7xl mx-auto">
-        <div className="mb-12">
-          <h1 className="text-5xl font-bold mb-2" style={{ color: colors.primary }}>Welcome back, {user?.firstName}!</h1>
-          <p className="text-xl" style={{ color: colors.text }}>Continue your learning journey and achieve your goals</p>
-        </div>
+  React.useEffect(() => {
+    const loadData = async () => {
+      try {
+        if (user?.role === 'student') {
+          // Load student progress
+          const progressRes = await progressAPI.getUserProgress();
+          setUserProgress(progressRes.data.data || []);
+          
+          // Load enrollments
+          const coursesRes = await contentAPI.getAllCourses({ status: 'enrolled' });
+          setEnrollments(coursesRes.data.data || []);
+        } else if (user?.role === 'educator') {
+          // Load educator's courses
+          const coursesRes = await contentAPI.getAllCourses({ createdBy: 'me' });
+          setEnrollments(coursesRes.data.data || []);
+        } else if (user?.role === 'admin') {
+          // Load admin stats
+          const usersRes = await authAPI.getAllUsers();
+          const enrollmentRes = await contentAPI.getEnrollmentStats();
+          setAdminStats({
+            totalUsers: usersRes.data.data?.length || 0,
+            totalStudents: usersRes.data.data?.filter(u => u.role === 'student').length || 0,
+            totalEducators: usersRes.data.data?.filter(u => u.role === 'educator').length || 0,
+            enrollmentStats: enrollmentRes.data.data || {}
+          });
+        }
+      } catch (error) {
+        console.error('Error loading dashboard data:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
 
-        {/* Quick Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
-          <Card className="text-black shadow-lg" style={{ backgroundColor: colors.primary }}>
-            <div className="text-4xl mb-4">
-              <FontAwesomeIcon icon={faBook} />
-            </div>
-            <p className="text-sm opacity-90 mb-2">Courses Enrolled</p>
-            <p className="text-3xl font-bold">5</p>
-          </Card>
-          <Card className="text-black shadow-lg" style={{ backgroundColor: colors.accent }}>
-            <div className="text-4xl mb-4">
-              <FontAwesomeIcon icon={faCheckCircle} />
-            </div>
-            <p className="text-sm opacity-90 mb-2">Completed</p>
-            <p className="text-3xl font-bold">2</p>
-          </Card>
-          <Card className="text-black shadow-lg" style={{ backgroundColor: colors.primary }}>
-            <div className="text-4xl mb-4">
-              <FontAwesomeIcon icon={faRobot} />
-            </div>
-            <p className="text-sm opacity-90 mb-2">AI Conversations</p>
-            <p className="text-3xl font-bold">24</p>
-          </Card>
-        </div>
+    if (user) {
+      loadData();
+    }
+  }, [user]);
 
-        {/* Quick Links */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
-          <Link to="/courses">
-            <Card className="hover:shadow-lg transition-shadow cursor-pointer h-full bg-white border-2" style={{ borderColor: colors.primary }}>
-              <div className="flex items-start justify-between">
-                <div>
-                  <h3 className="text-2xl font-bold mb-2" style={{ color: colors.primary }}>Browse Courses</h3>
-                  <p style={{ color: colors.text }}>Explore new learning opportunities and expand your skills</p>
-                </div>
-                <FontAwesomeIcon icon={faArrowRight} className="text-2xl" style={{ color: colors.primary }} />
+  // STUDENT HOME PAGE
+  if (user?.role === 'student') {
+    return (
+      <div className="min-h-screen py-12 px-6 w-full ml-0" style={{ backgroundColor: colors.background }}>
+        <div className="max-w-7xl mx-auto">
+          <div className="mb-12">
+            <h1 className="text-5xl font-bold mb-2" style={{ color: colors.primary }}>Welcome back, {user?.first_name || user?.firstName}!</h1>
+            <p className="text-xl" style={{ color: colors.text }}>Continue your learning journey and achieve your goals</p>
+          </div>
+
+          {/* Quick Stats */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+            <Card className="shadow-lg" style={{ backgroundColor: colors.primary, color: 'white', padding: '1.5rem' }}>
+              <div className="text-4xl mb-4" style={{ color: 'black' }}>
+                <FontAwesomeIcon icon={faBook} />
               </div>
+              <p className="text-sm opacity-90 mb-2" style={{ color: 'black' }}>Courses Enrolled</p>
+              <p className="text-3xl font-bold" style={{ color: 'black' }}>{enrollments.length}</p>
             </Card>
-          </Link>
-          <Link to="/ai-tutor">
+            <Card className="shadow-lg" style={{ backgroundColor: colors.accent, color: 'white', padding: '1.5rem' }}>
+              <div className="text-4xl mb-4" style={{ color: 'black' }}>
+                <FontAwesomeIcon icon={faCheckCircle} />
+              </div>
+              <p className="text-sm opacity-90 mb-2" style={{ color: 'black' }}>Completed</p>
+              <p className="text-3xl font-bold" style={{ color: 'black' }}>{userProgress.filter(p => p.is_completed).length}</p>
+            </Card>
+            <Card className="shadow-lg" style={{ backgroundColor: colors.primary, color: 'white', padding: '1.5rem' }}>
+              <div className="text-4xl mb-4" style={{ color: 'black' }}>
+                <FontAwesomeIcon icon={faRobot} />
+              </div>
+              <p className="text-sm opacity-90 mb-2" style={{ color: 'black' }}>Learning</p>
+              <p className="text-3xl font-bold" style={{ color: 'black' }}>{Math.round((userProgress.filter(p => p.completion_percentage > 0).length / Math.max(userProgress.length, 1)) * 100)}%</p>
+            </Card>
+          </div>
+
+          {/* Quick Links */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
+            <Link to="/courses">
+              <Card className="hover:shadow-lg transition-shadow cursor-pointer h-full bg-white border-2" style={{ borderColor: colors.primary }}>
+                <div className="flex items-start justify-between">
+                  <div>
+                    <h3 className="text-2xl font-bold mb-2" style={{ color: colors.primary }}>Browse Courses</h3>
+                    <p style={{ color: colors.text }}>Explore new learning opportunities and expand your skills</p>
+                  </div>
+                  <FontAwesomeIcon icon={faArrowRight} className="text-2xl" style={{ color: colors.primary }} />
+                </div>
+              </Card>
+            </Link>
+            <Link to="/ai-tutor">
+              <Card className="hover:shadow-lg transition-shadow cursor-pointer h-full bg-white border-2" style={{ borderColor: colors.accent }}>
+                <div className="flex items-start justify-between">
+                  <div>
+                    <h3 className="text-2xl font-bold mb-2" style={{ color: colors.primary }}>AI Tutor</h3>
+                    <p style={{ color: colors.text }}>Get personalized help with unlimited AI-powered tutoring sessions</p>
+                  </div>
+                  <FontAwesomeIcon icon={faArrowRight} className="text-2xl" style={{ color: colors.accent }} />
+                </div>
+              </Card>
+            </Link>
+          </div>
+
+          {/* Continue Your Learning */}
+          {enrollments.length > 0 && (
+            <>
+              <h2 className="text-3xl font-bold mb-6" style={{ color: colors.primary }}>Continue Your Learning</h2>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                {enrollments.slice(0, 3).map((course) => {
+                  const progress = userProgress.find(p => p.course_id === course.id);
+                  return (
+                    <Link key={course.id} to={`/courses/${course.id}`}>
+                      <Card className="hover:shadow-lg transition-shadow bg-white cursor-pointer h-full" style={{ borderLeft: `4px solid ${colors.accent}` }}>
+                        <div className="mb-4 h-32 rounded flex items-center justify-center" style={{ backgroundColor: colors.background }}>
+                          <FontAwesomeIcon icon={faBook} className="text-3xl" style={{ color: colors.primary }} />
+                        </div>
+                        <h3 className="text-lg font-bold mb-2" style={{ color: colors.primary }}>{course.title}</h3>
+                        <p className="text-sm mb-4" style={{ color: colors.text }}>Progress: {progress?.completion_percentage || 0}%</p>
+                        <div className="w-full bg-gray-200 rounded-full h-2 mb-4">
+                          <div className="h-2 rounded-full" style={{ width: `${progress?.completion_percentage || 0}%`, backgroundColor: colors.accent }}></div>
+                        </div>
+                        <Button 
+                          variant="primary" 
+                          className="w-full text-white font-bold rounded"
+                          style={{ backgroundColor: colors.primary }}
+                        >
+                          Continue
+                        </Button>
+                      </Card>
+                    </Link>
+                  );
+                })}
+              </div>
+            </>
+          )}
+
+          {enrollments.length === 0 && (
+            <div className="text-center py-20">
+              <div className="text-6xl mb-4" style={{ color: colors.primary }}>
+                <FontAwesomeIcon icon={faBook} />
+              </div>
+              <h3 className="text-2xl font-bold mb-4" style={{ color: colors.primary }}>No Courses Yet</h3>
+              <p className="text-lg mb-8" style={{ color: colors.text }}>Start exploring courses to begin your learning journey</p>
+              <Link to="/courses">
+                <Button 
+                  variant="primary" 
+                  className="px-8 py-4 text-lg font-bold text-white rounded-lg"
+                  style={{ backgroundColor: colors.primary }}
+                >
+                  Explore Courses
+                </Button>
+              </Link>
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  }
+
+  // EDUCATOR HOME PAGE
+  if (user?.role === 'educator') {
+    return (
+      <div className="min-h-screen py-12 px-6 w-full ml-0" style={{ backgroundColor: colors.background }}>
+        <div className="max-w-7xl mx-auto">
+          <div className="mb-12">
+            <h1 className="text-5xl font-bold mb-2" style={{ color: colors.primary }}>Educator Dashboard</h1>
+            <p className="text-xl" style={{ color: colors.text }}>Manage your courses and track student progress</p>
+          </div>
+
+          {/* Quick Stats */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+            <Card className="shadow-lg" style={{ backgroundColor: colors.primary, color: 'white', padding: '1.5rem' }}>
+              <div className="text-4xl mb-4" style={{ color: 'black' }}>
+                <FontAwesomeIcon icon={faBook} />
+              </div>
+              <p className="text-sm opacity-90 mb-2" style={{ color: 'black' }}>Active Courses</p>
+              <p className="text-3xl font-bold" style={{ color: 'black' }}>{enrollments.length}</p>
+            </Card>
+            <Card className="shadow-lg" style={{ backgroundColor: colors.accent, color: 'white', padding: '1.5rem' }}>
+              <div className="text-4xl mb-4" style={{ color: 'black' }}>
+                <FontAwesomeIcon icon={faUsers} />
+              </div>
+              <p className="text-sm opacity-90 mb-2" style={{ color: 'black' }}>Total Students</p>
+              <p className="text-3xl font-bold" style={{ color: 'black' }}>{enrollments.reduce((acc, c) => acc + (c.enrollment_count || 0), 0)}</p>
+            </Card>
+            <Card className="shadow-lg" style={{ backgroundColor: colors.primary, color: 'white', padding: '1.5rem' }}>
+              <div className="text-4xl mb-4" style={{ color: 'black' }}>
+                <FontAwesomeIcon icon={faChartLine} />
+              </div>
+              <p className="text-sm opacity-90 mb-2" style={{ color: 'black' }}>Total Enrollments</p>
+              <p className="text-3xl font-bold" style={{ color: 'black' }}>{enrollments.reduce((acc, c) => acc + (c.enrollment_count || 0), 0)}</p>
+            </Card>
+          </div>
+
+          {/* Quick Links */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
+            <Link to="/educator-dashboard">
+              <Card className="hover:shadow-lg transition-shadow cursor-pointer h-full bg-white border-2" style={{ borderColor: colors.primary }}>
+                <div className="flex items-start justify-between">
+                  <div>
+                    <h3 className="text-2xl font-bold mb-2" style={{ color: colors.primary }}>View Dashboard</h3>
+                    <p style={{ color: colors.text }}>Complete course management and analytics tools</p>
+                  </div>
+                  <FontAwesomeIcon icon={faArrowRight} className="text-2xl" style={{ color: colors.primary }} />
+                </div>
+              </Card>
+            </Link>
+            <Link to="/courses">
+              <Card className="hover:shadow-lg transition-shadow cursor-pointer h-full bg-white border-2" style={{ borderColor: colors.accent }}>
+                <div className="flex items-start justify-between">
+                  <div>
+                    <h3 className="text-2xl font-bold mb-2" style={{ color: colors.primary }}>Create Course</h3>
+                    <p style={{ color: colors.text }}>Build new learning content for your students</p>
+                  </div>
+                  <FontAwesomeIcon icon={faArrowRight} className="text-2xl" style={{ color: colors.accent }} />
+                </div>
+              </Card>
+            </Link>
+          </div>
+
+          {/* Your Courses */}
+          {enrollments.length > 0 && (
+            <>
+              <h2 className="text-3xl font-bold mb-6" style={{ color: colors.primary }}>Your Courses</h2>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                {enrollments.map((course) => (
+                  <Card key={course.id} className="hover:shadow-lg transition-shadow bg-white" style={{ borderLeft: `4px solid ${colors.accent}` }}>
+                    <div className="mb-4 h-32 rounded flex items-center justify-center" style={{ backgroundColor: colors.background }}>
+                      <FontAwesomeIcon icon={faBook} className="text-3xl" style={{ color: colors.primary }} />
+                    </div>
+                    <h3 className="text-lg font-bold mb-2" style={{ color: colors.primary }}>{course.title}</h3>
+                    <p className="text-sm mb-4" style={{ color: colors.text }}>Students: {course.enrollment_count || 0}</p>
+                    <Link to={`/educator-dashboard`}>
+                      <Button 
+                        variant="primary" 
+                        className="w-full text-white font-bold rounded"
+                        style={{ backgroundColor: colors.primary }}
+                      >
+                        Manage
+                      </Button>
+                    </Link>
+                  </Card>
+                ))}
+              </div>
+            </>
+          )}
+
+          {enrollments.length === 0 && (
+            <div className="text-center py-20">
+              <div className="text-6xl mb-4" style={{ color: colors.primary }}>
+                <FontAwesomeIcon icon={faBook} />
+              </div>
+              <h3 className="text-2xl font-bold mb-4" style={{ color: colors.primary }}>No Courses Yet</h3>
+              <p className="text-lg mb-8" style={{ color: colors.text }}>Create your first course to start teaching</p>
+              <Link to="/educator-dashboard">
+                <Button 
+                  variant="primary" 
+                  className="px-8 py-4 text-lg font-bold text-white rounded-lg"
+                  style={{ backgroundColor: colors.primary }}
+                >
+                  Go to Dashboard
+                </Button>
+              </Link>
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  }
+
+  // ADMIN HOME PAGE
+  if (user?.role === 'admin') {
+    return (
+      <div className="min-h-screen py-12 px-6 w-full ml-0" style={{ backgroundColor: colors.background }}>
+        <div className="max-w-7xl mx-auto">
+          <div className="mb-12">
+            <h1 className="text-5xl font-bold mb-2" style={{ color: colors.primary }}>Admin Dashboard</h1>
+            <p className="text-xl" style={{ color: colors.text }}>System overview and user management</p>
+          </div>
+
+          {/* System Stats */}
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-12 text-black">
+            <Card className="shadow-lg" style={{ backgroundColor: colors.primary, color: 'white', padding: '1.5rem' }}>
+              <div className="text-4xl mb-4" style={{ color: 'black' }}>
+                <FontAwesomeIcon icon={faUsers} />
+              </div>
+              <p className="text-sm opacity-90 mb-2" style={{ color: 'black' }}>Total Users</p>
+              <p className="text-3xl font-bold" style={{ color: 'black' }}>{adminStats.totalUsers}</p>
+            </Card>
+            <Card className="shadow-lg" style={{ backgroundColor: colors.accent, color: 'black', padding: '1.5rem' }}>
+              <div className="text-4xl mb-4" style={{ color: 'black' }}>
+                <FontAwesomeIcon icon={faGraduationCap} />
+              </div>
+              <p className="text-sm opacity-90 mb-2" style={{ color: 'black' }}>Students</p>
+              <p className="text-3xl font-bold" style={{ color: 'black' }}>{adminStats.totalStudents}</p>
+            </Card>
+            <Card className="shadow-lg" style={{ backgroundColor: colors.primary, color: 'white', padding: '1.5rem' }}>
+              <div className="text-4xl mb-4" style={{ color: 'black' }}>
+                <FontAwesomeIcon icon={faBook} />
+              </div>
+              <p className="text-sm opacity-90 mb-2" style={{ color: 'black' }}>Educators</p>
+              <p className="text-3xl font-bold" style={{ color: 'black' }}>{adminStats.totalEducators}</p>
+            </Card>
+            <Card className="shadow-lg" style={{ backgroundColor: colors.accent, color: 'black', padding: '1.5rem' }}>
+              <div className="text-4xl mb-4" style={{ color: 'black' }}>
+                <FontAwesomeIcon icon={faChartLine} />
+              </div>
+              <p className="text-sm opacity-90 mb-2" style={{ color: 'black' }}>System Health</p>
+              <p className="text-3xl font-bold" style={{ color: 'black' }}>100%</p>
+            </Card>
+          </div>
+
+          {/* Admin Links */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <Link to="/admin-dashboard">
+              <Card className="hover:shadow-lg transition-shadow cursor-pointer h-full bg-white border-2" style={{ borderColor: colors.primary }}>
+                <div className="flex items-start justify-between">
+                  <div>
+                    <h3 className="text-2xl font-bold mb-2" style={{ color: colors.primary }}>System Management</h3>
+                    <p style={{ color: colors.text }}>Manage users, roles, and system settings</p>
+                  </div>
+                  <FontAwesomeIcon icon={faArrowRight} className="text-2xl" style={{ color: colors.primary }} />
+                </div>
+              </Card>
+            </Link>
             <Card className="hover:shadow-lg transition-shadow cursor-pointer h-full bg-white border-2" style={{ borderColor: colors.accent }}>
               <div className="flex items-start justify-between">
                 <div>
-                  <h3 className="text-2xl font-bold mb-2" style={{ color: colors.primary }}>AI Tutor</h3>
-                  <p style={{ color: colors.text }}>Get personalized help with unlimited AI-powered tutoring sessions</p>
+                  <h3 className="text-2xl font-bold mb-2" style={{ color: colors.primary }}>Analytics</h3>
+                  <p style={{ color: colors.text }}>View platform analytics and usage statistics</p>
                 </div>
                 <FontAwesomeIcon icon={faArrowRight} className="text-2xl" style={{ color: colors.accent }} />
               </div>
             </Card>
-          </Link>
-        </div>
-
-        {/* Featured Courses */}
-        <h2 className="text-3xl font-bold mb-6" style={{ color: colors.primary }}>Continue Your Learning</h2>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {[1, 2, 3].map(i => (
-            <Card key={i} className="hover:shadow-lg transition-shadow bg-white" style={{ borderLeft: `4px solid ${colors.accent}` }}>
-              <div className="mb-4 h-32 rounded flex items-center justify-center" style={{ backgroundColor: colors.background }}>
-                <FontAwesomeIcon icon={faBook} className="text-3xl" style={{ color: colors.primary }} />
-              </div>
-              <h3 className="text-lg font-bold mb-2" style={{ color: colors.primary }}>Course {i}</h3>
-              <p className="text-sm mb-4" style={{ color: colors.text }}>Progress: {i * 20}%</p>
-              <div className="w-full bg-gray-200 rounded-full h-2 mb-4">
-                <div className="h-2 rounded-full" style={{ width: `${i * 20}%`, backgroundColor: colors.accent }}></div>
-              </div>
-              <Button 
-                variant="primary" 
-                className="w-full text-black font-bold rounded"
-                style={{ backgroundColor: colors.primary }}
-              >
-                Continue
-              </Button>
-            </Card>
-          ))}
+          </div>
         </div>
       </div>
-    </div>
-  );
+    );
+  }
+
+  // Default fallback
+  return <PublicHomePage />;
 };
 
 export const HomePage = () => {

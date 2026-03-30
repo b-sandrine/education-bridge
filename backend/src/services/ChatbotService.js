@@ -20,7 +20,13 @@ class ChatbotService {
         return await this.generateOpenAIResponse(query, systemPrompt, language, messages);
       }
     } catch (error) {
-      logger.error('Chatbot error:', error);
+      logger.error('Chatbot API error:', {
+        message: error.message,
+        status: error.response?.status,
+        statusText: error.response?.statusText,
+        errorDetails: error.response?.data,
+        provider: process.env.AI_SERVICE_PROVIDER,
+      });
       
       // Fallback response if AI service is unavailable
       return {
@@ -134,7 +140,7 @@ STUDENT PROFILE:
     };
   }
 
-  static async generateGoogleResponse(query, systemPrompt, language) {
+  static async generateGoogleResponse(query, systemPrompt, language, conversationHistory = []) {
     const apiKey = process.env.AI_API_KEY;
     if (!apiKey) {
       throw new Error('Google Gemini API key not configured');
@@ -146,17 +152,33 @@ STUDENT PROFILE:
     const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
 
     try {
+      // Build conversation contents
+      const contents = [];
+      
+      // Add conversation history
+      if (Array.isArray(conversationHistory) && conversationHistory.length > 0) {
+        conversationHistory.forEach(msg => {
+          contents.push({
+            role: msg.role === 'assistant' ? 'model' : 'user',
+            parts: [
+              { text: msg.content }
+            ]
+          });
+        });
+      }
+      
+      // Add current query with system prompt in first message
+      contents.push({
+        role: 'user',
+        parts: [
+          { text: systemPrompt + '\n\n' + query }
+        ]
+      });
+
       const response = await axios.post(
         url,
         {
-          contents: [
-            {
-              role: 'user',
-              parts: [
-                { text: systemPrompt + '\n\n' + query }
-              ]
-            }
-          ],
+          contents,
           generationConfig: {
             temperature: 0.7,
             topP: 1,
@@ -186,7 +208,7 @@ STUDENT PROFILE:
           headers: {
             'Content-Type': 'application/json',
           },
-          timeout: 10000,
+          timeout: 30000,
         }
       );
 
@@ -206,14 +228,27 @@ STUDENT PROFILE:
         timestamp: new Date(),
       };
     } catch (error) {
+      const status = error.response?.status;
+      const errorMessage = error.response?.data?.error?.message;
+      
       logger.error('Google Gemini API error', {
-        status: error.response?.status,
+        status,
         statusText: error.response?.statusText,
-        url,
-        message: error.message,
-        errorData: error.response?.data,
+        errorMessage,
+        fullError: error.response?.data,
+        apiKey: apiKey ? `${apiKey.substring(0, 10)}...` : 'NOT SET',
       });
-      throw error;
+
+      // Provide specific error info
+      const errorInfo = new Error(
+        status === 403 
+          ? `Google Gemini API access denied (403). Check your API key and ensure it has the Generative Language API enabled. Error: ${errorMessage}`
+          : status === 401
+          ? `Google Gemini API authentication failed (401). Invalid API key.`
+          : `Google Gemini API error: ${errorMessage || error.message}`
+      );
+      errorInfo.status = status;
+      throw errorInfo;
     }
   }
 
