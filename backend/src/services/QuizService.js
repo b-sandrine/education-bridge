@@ -92,13 +92,24 @@ class QuizService {
       ORDER BY question_order ASC
     `;
     const questionsResult = await pool.query(questionsQuery, [quizId]);
-    quiz.questions = questionsResult.rows.map(q => ({
-      ...q,
-      options: q.options ? JSON.parse(q.options) : null,
-      question_text: q.question_text,
-      question_type: q.question_type,
-      correct_answer: q.correct_answer,
-    }));
+    quiz.questions = questionsResult.rows.map(q => {
+      let parsedOptions = null;
+      if (q.options) {
+        try {
+          parsedOptions = typeof q.options === 'string' ? JSON.parse(q.options) : q.options;
+        } catch (e) {
+          console.error('Error parsing options:', q.options, e);
+          parsedOptions = q.options;
+        }
+      }
+      return {
+        ...q,
+        options: parsedOptions,
+        question_text: q.question_text,
+        question_type: q.question_type,
+        correct_answer: q.correct_answer,
+      };
+    });
 
     return quiz;
   }
