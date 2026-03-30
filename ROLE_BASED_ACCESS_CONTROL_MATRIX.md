@@ -407,3 +407,16 @@ This allows:
 - Routes with Role Guards: [backend/src/routes/](backend/src/routes/)
 - Database Schema: [database/schema.sql](database/schema.sql)
 
+---
+
+## CORS Testing
+
+Tested with:
+
+```
+fetch('https://education-bridge-vnjp.onrender.com/api/health')
+  .then(r => r.json())
+  .then(d => console.log('✓ Works:', d))
+  .catch(e => console.error('✗ CORS Error:', e))
+```
+
