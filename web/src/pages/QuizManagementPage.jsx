@@ -23,6 +23,8 @@ export const QuizManagementPage = () => {
   const { showSuccess, showError } = useNotification();
 
   const [course, setCourse] = useState(null);
+  const [lessons, setLessons] = useState([]);
+  const [selectedLesson, setSelectedLesson] = useState(null);
   const [quizzes, setQuizzes] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
@@ -38,6 +40,9 @@ export const QuizManagementPage = () => {
       setLoading(true);
       const courseResponse = await contentAPI.getCourse(courseId);
       setCourse(courseResponse.data.data);
+
+      const lessonsResponse = await contentAPI.getCourseLessons(courseId);
+      setLessons(lessonsResponse.data.data || []);
 
       const quizzesResponse = await quizAPI.getAllQuizzes({ courseId });
       setQuizzes(quizzesResponse.data.data || []);
@@ -110,21 +115,54 @@ export const QuizManagementPage = () => {
             onClick={() => {
               setShowForm(false);
               setEditingQuiz(null);
+              setSelectedLesson(null);
             }}
             className="mb-6"
           >
             <FontAwesomeIcon icon={faArrowLeft} className="mr-2" />
             Back to Quizzes
           </Button>
-          <QuizBuilder
-            lesson={course}
-            initialQuiz={editingQuiz}
-            onSave={editingQuiz ? handleUpdateQuiz : handleCreateQuiz}
-            onCancel={() => {
-              setShowForm(false);
-              setEditingQuiz(null);
-            }}
-          />
+
+          {!editingQuiz && !selectedLesson && lessons.length > 0 && (
+            <Card className="p-6 mb-6">
+              <h2 className="text-lg font-semibold mb-4" style={{ color: colors.primary }}>
+                Select a Lesson for the Quiz
+              </h2>
+              <div className="space-y-2">
+                {lessons.map((lesson) => (
+                  <button
+                    key={lesson.id}
+                    onClick={() => setSelectedLesson(lesson)}
+                    className="w-full text-left p-3 border rounded-lg hover:opacity-90 transition"
+                    style={{
+                      borderColor: colors.primary,
+                      backgroundColor: `${colors.primary}08`,
+                    }}
+                  >
+                    <div style={{ color: colors.primary }} className="font-medium">
+                      {lesson.title}
+                    </div>
+                    <div style={{ color: colors.text }} className="text-sm opacity-75">
+                      Lesson {lesson.lesson_order}
+                    </div>
+                  </button>
+                ))}
+              </div>
+            </Card>
+          )}
+
+          {(editingQuiz || selectedLesson) && (
+            <QuizBuilder
+              lesson={selectedLesson || editingQuiz}
+              initialQuiz={editingQuiz}
+              onSave={editingQuiz ? handleUpdateQuiz : handleCreateQuiz}
+              onCancel={() => {
+                setShowForm(false);
+                setEditingQuiz(null);
+                setSelectedLesson(null);
+              }}
+            />
+          )}
         </div>
       </div>
     );
